@@ -71,4 +71,29 @@ describe("buildSandboxSrcDoc", () => {
     const metrics = simInstance.metrics(nextState, { speed: 1 });
     expect(metrics).toEqual({ pos: 43 });
   });
+
+  it("should ensure all archetype exemplar codes produce syntactically valid JavaScript inside buildSandboxSrcDoc", async () => {
+    const { ARCHETYPE_EXEMPLARS } = await import("@/lib/archetypes");
+    const acorn = await import("acorn");
+
+    for (const [key, exemplar] of Object.entries(ARCHETYPE_EXEMPLARS)) {
+      const initialParams: Record<string, number> = {};
+      for (const p of exemplar.spec.parameters) {
+        initialParams[p.id] = p.default;
+      }
+
+      const html = buildSandboxSrcDoc({
+        code: exemplar.code,
+        initialParams,
+      });
+
+      const scriptMatch = html.match(/<script>([\s\S]*?)<\/script>/);
+      expect(scriptMatch).toBeTruthy();
+
+      const scriptContent = scriptMatch![1];
+      expect(() => {
+        acorn.parse(scriptContent, { ecmaVersion: 2020 });
+      }).not.toThrow();
+    }
+  });
 });

@@ -64,9 +64,6 @@ export default function Home() {
               PT
             </span>
             <span className="font-bold text-lg tracking-tight">PlayTheory</span>
-            <span className="text-xs bg-arcade-emerald/20 text-arcade-emerald border border-arcade-emerald/30 px-2 py-0.5 rounded-full font-mono">
-              Phase 2 Verifier Active
-            </span>
           </div>
 
           <nav className="flex items-center gap-4 text-sm font-medium">

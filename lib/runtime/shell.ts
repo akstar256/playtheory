@@ -108,7 +108,7 @@ export function buildSandboxSrcDoc({
         isPlaying = false;
         if (overlay) {
           overlay.style.display = "block";
-          overlay.innerText = prefix + ":\n" + (err?.stack || err?.message || String(err));
+          overlay.innerText = prefix + ":\\n" + (err?.stack || err?.message || String(err));
         }
         window.parent.postMessage({ type: "sim_error", error: prefix + ": " + (err?.message || String(err)) }, "*");
       }
