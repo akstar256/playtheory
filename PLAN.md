@@ -13,7 +13,9 @@
 - [x] Add basic smoke test script (`scripts/smoke.ts`)
 - [x] Run typecheck, lint, and unit tests
 - [x] Build successfully passes production build (`npm run build`)
-- [ ] Push/Deploy skeleton to Vercel and verify `/api/health` on live URL
+- [x] Push/Deploy skeleton to Vercel and verify `/api/health` on live URL (`https://playtheory-gamma.vercel.app`)
+
+*Acceptance Criteria:* Public URL serves skeleton; `/api/health` returns OK; CI-style check runs typecheck, lint, tests. (PASSED ✅)
 
 *Acceptance Criteria:* Public URL serves skeleton; `/api/health` returns OK; CI-style check runs typecheck, lint, tests.
 

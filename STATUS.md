@@ -2,8 +2,9 @@
 
 > Updated after each milestone. Single source of truth for current state and next immediate steps.
 
-**Current Phase:** Phase 0 (Foundation and Skeleton Deploy)  
+**Current Phase:** Phase 1 (Vertical Slice)  
 **Last Updated:** 2026-11-14  
+**Live Production URL:** https://playtheory-gamma.vercel.app  
 
 ---
 
@@ -14,23 +15,25 @@
 - [x] Project environment credentials configured in `.env.local`
 - [x] Next.js App Router with TypeScript strict mode and Tailwind CSS
 - [x] Dual-mode Store interface (`MemoryStore` and `UpstashStore`)
-- [x] `/api/health` live endpoint returning liveness & configuration status
+- [x] Live public production deployment at `https://playtheory-gamma.vercel.app`
+- [x] Live `/api/health` returning 200 OK with Upstash Redis ping verified (27ms)
 - [x] Vitest unit test suite (6/6 passing across store and health check)
 - [x] Production build passes (`npm run build`)
-- [x] Smoke test runner configured in `scripts/smoke.ts`
+- [x] Production smoke test script green (`scripts/smoke.ts`)
 
 ---
 
 ### What Is In Progress / Broken
-- [ ] Push to GitHub remote and link to Vercel
-- [ ] Verify `/api/health` on live public Vercel URL
+- [ ] Phase 1: Vertical Slice (Zod schemas, Gemini LLM streaming adapter, archetypes, sandboxed iframe)
 
 ---
 
 ### What Is Next
-1. Commit Phase 0 changes (`chore: phase 0 foundation and skeleton deploy`) and push to `origin/main`.
-2. Confirm live public URL on Vercel and verify `/api/health`.
-3. Kick off Phase 1 (Vertical Slice: Zod schemas, LLM adapter, runtime sandbox, archetypes).
+1. Build `lib/schemas/simSpec.ts` and `lib/schemas/contracts.ts` (Zod schemas per Section 7).
+2. Implement Gemini LLM provider adapter in `lib/llm/gemini.ts` (JSON generation, streaming SSE, cost accounting).
+3. Author 3 initial archetype exemplars (`particles`, `ode_phase`, `agents`) in `lib/archetypes/`.
+4. Implement sandboxed iframe runtime shell with `SimKit`.
+5. Connect generation pipeline (`/api/plan` -> `/api/build`) and interactive player with parameter panel and live canvas.
 
 ---
 
