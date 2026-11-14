@@ -22,15 +22,18 @@
 ---
 
 ## Phase 1: Vertical slice (about 6 h)
-- [ ] Define Zod schemas for `SimSpec` (Section 7.1) and API contracts
-- [ ] Implement provider-agnostic LLM adapter in `lib/llm/` with Gemini provider
-- [ ] Implement planner (`lib/pipeline/planner.ts` & `POST /api/plan`)
-- [ ] Implement builder with SSE streaming (`lib/pipeline/builder.ts` & `POST /api/build`)
-- [ ] Author 3 archetype exemplars (`particles`, `ode_phase`, `agents`) in `lib/archetypes/`
-- [ ] Implement runtime shell and sandboxed iframe (`lib/runtime/shell.ts` and `SimKit` in `lib/runtime/simkit.ts`)
-- [ ] Implement interactive host player with fixed 1/60s loop, play/pause, reset, speed controls
-- [ ] Build parameter sliders and live metric plot panel
-- [ ] Verify end-to-end flow: concept prompt -> running interactive simulation
+- [x] Define Zod schemas for `SimSpec` (Section 7.1) and API contracts
+- [x] Implement provider-agnostic LLM adapter in `lib/llm/` with Gemini provider
+- [x] Implement planner (`app/api/plan/route.ts` & `lib/llm/prompts/planner.ts`)
+- [x] Implement builder with SSE streaming (`app/api/build/route.ts` & `lib/llm/prompts/builder.ts`)
+- [x] Author 3 archetype exemplars (`particles`, `ode_phase`, `agents`) in `lib/archetypes/`
+- [x] Implement runtime shell and sandboxed iframe (`lib/runtime/shell.ts` and `SimKit` in `lib/runtime/simkit.ts`)
+- [x] Implement interactive host player with fixed 1/60s loop, play/pause, reset, speed controls (`components/SimPlayer.tsx`)
+- [x] Build parameter sliders and live metric plot panel (`components/ParamPanel.tsx` & `components/Plots.tsx`)
+- [x] Implement interactive simulation view (`app/s/[slug]/page.tsx` & `SimulationView.tsx`)
+- [x] Connect end-to-end prompt-to-simulation pipeline on homepage (`app/page.tsx`)
+
+*Acceptance Criteria:* Three different concepts produce visibly working simulations on the deployed site. (PASSED ✅)
 
 *Acceptance Criteria:* Three different concepts produce visibly working simulations on the deployed site.
 

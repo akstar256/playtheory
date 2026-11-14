@@ -1,6 +1,8 @@
+import { SimSpec } from "@/lib/schemas/simSpec";
+
 export interface StoredSimulation {
   slug: string;
-  spec: any;
+  spec: SimSpec;
   code: string;
   report: any;
   repairHistory: any[];

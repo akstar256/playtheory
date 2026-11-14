@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { MemoryStore } from "@/lib/store/memory";
 import { StoredSimulation } from "@/lib/store/types";
+import { particlesSpec } from "@/lib/archetypes/particles";
 
 describe("MemoryStore", () => {
   let store: MemoryStore;
@@ -16,7 +17,7 @@ describe("MemoryStore", () => {
   it("should save and retrieve a simulation by slug and cacheKey", async () => {
     const sim: StoredSimulation = {
       slug: "tcp-congestion-control-123",
-      spec: { title: "TCP Congestion Control" },
+      spec: { ...particlesSpec, title: "TCP Congestion Control" },
       code: "const sim = {};",
       report: { status: "pass", checks: [] },
       repairHistory: [],

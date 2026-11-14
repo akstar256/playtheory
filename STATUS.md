@@ -2,7 +2,7 @@
 
 > Updated after each milestone. Single source of truth for current state and next immediate steps.
 
-**Current Phase:** Phase 1 (Vertical Slice)  
+**Current Phase:** Phase 2 (Verifier and Self-Repair Loop)  
 **Last Updated:** 2026-11-14  
 **Live Production URL:** https://playtheory-gamma.vercel.app  
 
@@ -17,23 +17,28 @@
 - [x] Dual-mode Store interface (`MemoryStore` and `UpstashStore`)
 - [x] Live public production deployment at `https://playtheory-gamma.vercel.app`
 - [x] Live `/api/health` returning 200 OK with Upstash Redis ping verified (27ms)
-- [x] Vitest unit test suite (6/6 passing across store and health check)
-- [x] Production build passes (`npm run build`)
-- [x] Production smoke test script green (`scripts/smoke.ts`)
+- [x] Zod validation for `SimSpec` (2-6 params, dynamics, visual plots, presets, misconceptions, quiz)
+- [x] Provider-agnostic Gemini LLM adapter with streaming SSE and structured JSON generation
+- [x] Three hand-crafted archetype exemplars (`particles`, `ode_phase`, `agents`)
+- [x] Sandboxed iframe runtime shell with strict CSP and `SimKit` mathematical helpers
+- [x] Interactive Simulation Player (`SimPlayer`), Parameter Sliders (`ParamPanel`), and Canvas Telemetry Plots (`Plots`)
+- [x] Full end-to-end concept prompt generator on homepage
+- [x] Unit test suite passing 19/19 tests across schemas, math helpers, archetypes, store, and health
 
 ---
 
 ### What Is In Progress / Broken
-- [ ] Phase 1: Vertical Slice (Zod schemas, Gemini LLM streaming adapter, archetypes, sandboxed iframe)
+- [ ] Phase 2: Verifier harness (12 checks: static AST, loop-guard, headless worker, canvas variance) and self-repair loop (`/api/repair`)
 
 ---
 
 ### What Is Next
-1. Build `lib/schemas/simSpec.ts` and `lib/schemas/contracts.ts` (Zod schemas per Section 7).
-2. Implement Gemini LLM provider adapter in `lib/llm/gemini.ts` (JSON generation, streaming SSE, cost accounting).
-3. Author 3 initial archetype exemplars (`particles`, `ode_phase`, `agents`) in `lib/archetypes/`.
-4. Implement sandboxed iframe runtime shell with `SimKit`.
-5. Connect generation pipeline (`/api/plan` -> `/api/build`) and interactive player with parameter panel and live canvas.
+1. Commit Phase 1 changes and push to `origin/main` to trigger Vercel deployment.
+2. Implement AST loop-guard instrumentation with Acorn in `lib/verify/loopGuard.ts`.
+3. Implement static checks and banned identifier analysis in `lib/verify/static.ts`.
+4. Implement headless worker checks (600 steps, finite metrics, dead slider sensitivity) in `lib/verify/modelChecks.ts`.
+5. Implement offscreen canvas variance and animation checks in `lib/verify/drawChecks.ts`.
+6. Implement `/api/repair` with client state machine orchestrator and live timeline UI.
 
 ---
 
