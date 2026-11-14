@@ -1,0 +1,38 @@
+[
+  { "id": "p1", "category": "Physics", "concept": "projectile motion with aerodynamic air drag and crosswind", "level": "intermediate", "archetype": "particles" },
+  { "id": "p2", "category": "Physics", "concept": "Doppler effect sound wave compression from moving source", "level": "beginner", "archetype": "particles" },
+  { "id": "p3", "category": "Physics", "concept": "Kepler orbits planetary motion and gravitational eccentricity", "level": "intermediate", "archetype": "particles" },
+  { "id": "p4", "category": "Physics", "concept": "refraction and Snell's law light wave speed in dual media", "level": "beginner", "archetype": "geometry_optics" },
+  { "id": "p5", "category": "Physics", "concept": "double pendulum chaotic trajectory sensitivity to initial angles", "level": "advanced", "archetype": "particles" },
+
+  { "id": "b1", "category": "Biology", "concept": "epidemic SIR infection dynamics and transmission probability", "level": "intermediate", "archetype": "agents" },
+  { "id": "b2", "category": "Biology", "concept": "natural selection and allele frequency genetic drift", "level": "intermediate", "archetype": "agents" },
+  { "id": "b3", "category": "Biology", "concept": "Lotka-Volterra predator-prey dynamics and phase portraits", "level": "intermediate", "archetype": "ode_phase" },
+  { "id": "b4", "category": "Biology", "concept": "photosynthesis rate saturation vs light intensity and carbon dioxide", "level": "beginner", "archetype": "ode_phase" },
+  { "id": "b5", "category": "Biology", "concept": "how vaccines train the immune system and antibody affinity", "level": "intermediate", "archetype": "agents" },
+
+  { "id": "cs1", "category": "Computer Science", "concept": "TCP congestion control AIMD algorithm and packet drop backoff", "level": "intermediate", "archetype": "ode_phase" },
+  { "id": "cs2", "category": "Computer Science", "concept": "PageRank random surfer network link diffusion", "level": "intermediate", "archetype": "agents" },
+  { "id": "cs3", "category": "Computer Science", "concept": "sorting algorithm comparison bubble sort vs quicksort execution", "level": "beginner", "archetype": "particles" },
+  { "id": "cs4", "category": "Computer Science", "concept": "Conway's Game of Life cellular automaton rules and emergent gliders", "level": "beginner", "archetype": "cellular_automaton" },
+  { "id": "cs5", "category": "Computer Science", "concept": "hash table collision clustering with linear probing", "level": "intermediate", "archetype": "particles" },
+
+  { "id": "ec1", "category": "Economics", "concept": "supply and demand market price equilibrium and elasticity shocks", "level": "beginner", "archetype": "ode_phase" },
+  { "id": "ec2", "category": "Economics", "concept": "compound interest growth vs inflation purchasing power erosion", "level": "beginner", "archetype": "ode_phase" },
+  { "id": "ec3", "category": "Economics", "concept": "tragedy of the commons shared pasture resource depletion", "level": "intermediate", "archetype": "agents" },
+  { "id": "ec4", "category": "Economics", "concept": "Vickrey auction vs first-price sealed-bid truthfulness", "level": "advanced", "archetype": "agents" },
+
+  { "id": "m1", "category": "Mathematics", "concept": "central limit theorem convergence of sum of uniform random variables", "level": "intermediate", "archetype": "particles" },
+  { "id": "m2", "category": "Mathematics", "concept": "Monte Carlo method approximating pi with random dart sampling", "level": "beginner", "archetype": "particles" },
+  { "id": "m3", "category": "Mathematics", "concept": "logistic map bifurcation diagram and route to chaos", "level": "advanced", "archetype": "ode_phase" },
+  { "id": "m4", "category": "Mathematics", "concept": "Fourier series square wave synthesis from harmonic sine harmonics", "level": "intermediate", "archetype": "particles" },
+
+  { "id": "ch1", "category": "Chemistry", "concept": "Ohm's law electrical resistance current and voltage in series", "level": "beginner", "archetype": "ode_phase" },
+  { "id": "ch2", "category": "Chemistry", "concept": "acid-base titration curve equivalence point and pH buffer zones", "level": "intermediate", "archetype": "ode_phase" },
+  { "id": "ch3", "category": "Chemistry", "concept": "chemical reaction kinetics Arrhenius equation activation energy", "level": "intermediate", "archetype": "particles" },
+  { "id": "ch4", "category": "Chemistry", "concept": "ideal gas law Boyle's and Charles's temperature pressure volume", "level": "beginner", "archetype": "particles" },
+
+  { "id": "s1", "category": "Social Systems", "concept": "M/M/1 queue bank teller waiting line and server congestion", "level": "intermediate", "archetype": "queue_flow" },
+  { "id": "s2", "category": "Social Systems", "concept": "Schelling model of neighborhood segregation mild preference tipping points", "level": "intermediate", "archetype": "agents" },
+  { "id": "s3", "category": "Social Systems", "concept": "phantom traffic jam emergence from minor braking waves", "level": "intermediate", "archetype": "particles" }
+]

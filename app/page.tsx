@@ -71,11 +71,17 @@ export default function Home() {
 
           <nav className="flex items-center gap-4 text-sm font-medium">
             <Link
+              href="/status"
+              className="flex items-center gap-1.5 text-xs font-mono bg-paper-100 hover:bg-paper-200 dark:bg-paper-800 dark:hover:bg-paper-700 px-2.5 py-1 rounded border border-paper-300 dark:border-paper-700 transition"
+            >
+              <Activity className="w-3.5 h-3.5 text-arcade-emerald" />
+              Status & Telemetry
+            </Link>
+            <Link
               href="/api/health"
               className="flex items-center gap-1.5 text-xs font-mono bg-paper-100 hover:bg-paper-200 dark:bg-paper-800 dark:hover:bg-paper-700 px-2.5 py-1 rounded border border-paper-300 dark:border-paper-700 transition"
               target="_blank"
             >
-              <Activity className="w-3.5 h-3.5 text-arcade-emerald" />
               API Health
             </Link>
           </nav>
@@ -191,7 +197,7 @@ export default function Home() {
             <span className="text-xs font-mono text-paper-500">Ready to play</span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             <Link
               href="/s/particles-exemplar"
               className="p-4 rounded-xl border border-paper-300 dark:border-paper-700 bg-white dark:bg-paper-900 hover:border-arcade-crimson transition shadow-sm hover:shadow"
@@ -228,6 +234,32 @@ export default function Home() {
               <h3 className="font-bold text-sm mt-2 mb-1">Epidemic SIR</h3>
               <p className="text-xs text-paper-500 line-clamp-2">
                 Discrete interacting agents modeling exponential spread and herd immunity.
+              </p>
+            </Link>
+
+            <Link
+              href="/s/cellular_automaton-exemplar"
+              className="p-4 rounded-xl border border-paper-300 dark:border-paper-700 bg-white dark:bg-paper-900 hover:border-arcade-crimson transition shadow-sm hover:shadow"
+            >
+              <span className="text-[10px] font-mono uppercase bg-paper-200 dark:bg-paper-800 px-1.5 py-0.5 rounded">
+                cellular_automaton
+              </span>
+              <h3 className="font-bold text-sm mt-2 mb-1">Game of Life</h3>
+              <p className="text-xs text-paper-500 line-clamp-2">
+                Conway&apos;s grid rules: underpopulation, survival, overcrowding, and gliders.
+              </p>
+            </Link>
+
+            <Link
+              href="/s/queue_flow-exemplar"
+              className="p-4 rounded-xl border border-paper-300 dark:border-paper-700 bg-white dark:bg-paper-900 hover:border-arcade-crimson transition shadow-sm hover:shadow"
+            >
+              <span className="text-[10px] font-mono uppercase bg-paper-200 dark:bg-paper-800 px-1.5 py-0.5 rounded">
+                queue_flow
+              </span>
+              <h3 className="font-bold text-sm mt-2 mb-1">M/M/1 Server Queue</h3>
+              <p className="text-xs text-paper-500 line-clamp-2">
+                Asymptotic non-linear queue delay explosions when arrival rate nears service capacity.
               </p>
             </Link>
           </div>

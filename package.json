@@ -12,7 +12,9 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "ci": "npm run typecheck && npm run lint && npm run test",
-    "smoke": "tsx scripts/smoke.ts"
+    "smoke": "tsx scripts/smoke.ts",
+    "seed": "tsx scripts/seed-gallery.ts",
+    "eval": "tsx scripts/eval.ts"
   },
   "dependencies": {
     "@upstash/ratelimit": "^2.0.5",
