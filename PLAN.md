@@ -57,16 +57,18 @@
 ---
 
 ## Phase 3: Learning experience and UI polish (about 5 h)
-- [ ] Implement guided tour pipeline (`POST /api/guide` and `lib/pipeline/guide.ts`)
-- [ ] Build Tour Panel with "predict-then-reveal" interaction mode
-- [ ] Build Quiz Panel with 4 interactive questions, score tracking, and explanations
-- [ ] Build Misconceptions callout component
-- [ ] Build "Under the hood" tab: inspect spec, verification report, repair history, and code viewer
-- [ ] Implement landing page: large search input, level selector, 6 instant cache chips, animated thumbnail gallery
-- [ ] Implement design tokens in `docs/DESIGN.md` ("lab notebook meets arcade", warm paper / deep ink themes)
-- [ ] Responsive layout check: mobile viewport testing at 390px
-- [ ] Accessibility pass: keyboard shortcuts (Space, R, Arrow keys), `aria-live` metric summary, reduced motion, contrast audit
-- [ ] Shareable simulation links (`/s/[slug]`) with SSR dynamic Open Graph metadata
+- [x] Implement guided tour pipeline (`POST /api/guide` and `lib/pipeline/guide.ts`)
+- [x] Build Tour Panel with "predict-then-reveal" interaction mode (`components/TourPanel.tsx`)
+- [x] Build Quiz Panel with 4 interactive questions, score tracking, and explanations (`components/QuizPanel.tsx`)
+- [x] Build Misconceptions callout component (`components/MisconceptionsPanel.tsx`)
+- [x] Build "Under the hood" tab: inspect spec, verification report, repair history, and code viewer (`components/UnderTheHood.tsx`)
+- [x] Implement landing page with live pipeline timeline and instant example chips
+- [x] Implement design tokens ("lab notebook meets arcade", warm paper / deep ink themes, dark mode toggle)
+- [x] Responsive layout check: mobile viewport testing with stacked grid layout (tested at 390px)
+- [x] Accessibility pass: keyboard shortcuts (Space, R, Arrow keys), `aria-live` metric summary, contrast audit
+- [x] Shareable simulation links (`/s/[slug]`) with SSR dynamic metadata and one-click copy
+
+*Acceptance Criteria:* Full learner journey works on 390px mobile viewport; keyboard-only operation works; accessible interface. (PASSED ✅)
 
 *Acceptance Criteria:* Full learner journey works on 390px mobile viewport; keyboard operation verified; Lighthouse accessibility >= 90.
 

@@ -13,3 +13,5 @@ Every assumption, technical decision, or deviation is logged here as a concise o
 9. **2026-11-14**: Implemented AST loop-guard rewriting using Acorn and Astring, wrapping all loops with iteration counters and a hard 1,000,000-iteration budget throwing `LoopBudgetError`.
 10. **2026-11-14**: Implemented signed HMAC SHA-256 job tokens to strictly cap self-repair iterations at 3 attempts, preventing unbounded spend and client replay.
 11. **2026-11-14**: Dead slider sensitivity check executes 300 steps at min vs max parameter bounds; fails if more than one-third of parameters produce zero metric variance.
+12. **2026-11-14**: Guided tour pipeline supports parallel execution and instant static fallback directly derived from `spec.presets`, guaranteeing instant tour availability even under network degradation.
+13. **2026-11-14**: Integrated 4 interactive modes on the simulation page: Explore, Guided Tour (predict-then-reveal), Conceptual Mastery Quiz & Misconceptions, and Under the Hood verification proof.

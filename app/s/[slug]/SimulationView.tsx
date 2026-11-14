@@ -1,12 +1,18 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft, Share2, Code2, Compass, Check } from "lucide-react";
+import { ArrowLeft, Share2, Compass, Sparkles, HelpCircle, ShieldCheck, Check, Keyboard, Moon, Sun } from "lucide-react";
 import { StoredSimulation } from "@/lib/store";
 import { SimPlayer } from "@/components/SimPlayer";
 import { ParamPanel } from "@/components/ParamPanel";
 import { Plots } from "@/components/Plots";
+import { TourPanel } from "@/components/TourPanel";
+import { QuizPanel } from "@/components/QuizPanel";
+import { MisconceptionsPanel } from "@/components/MisconceptionsPanel";
+import { UnderTheHood } from "@/components/UnderTheHood";
+import { GuidedTour } from "@/lib/schemas/guide";
+import { generateStaticTourFromSpec } from "@/lib/pipeline/guide";
 
 interface SimulationViewProps {
   sim: StoredSimulation;
@@ -26,29 +32,64 @@ export function SimulationView({ sim }: SimulationViewProps) {
 
   const [currentParams, setCurrentParams] = useState<Record<string, number>>(initialParams);
   const [metricsHistory, setMetricsHistory] = useState<{ t: number; metrics: Record<string, number> }[]>([]);
-  const [activeTab, setActiveTab] = useState<"explore" | "code">("explore");
+  const [activeMode, setActiveMode] = useState<"explore" | "guided" | "quiz" | "hood">("explore");
   const [copied, setCopied] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
+  const [latestMetricText, setLatestMetricText] = useState("");
+
+  // Guided tour data (initial static fallback, then enhances via API)
+  const [tour, setTour] = useState<GuidedTour>(() => generateStaticTourFromSpec(spec));
+
+  useEffect(() => {
+    fetch("/api/guide", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ spec }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.tour) {
+          setTour(data.tour);
+        }
+      })
+      .catch(() => {});
+  }, [spec]);
+
+  // Dark mode toggle
+  const toggleDarkMode = () => {
+    const next = !darkMode;
+    setDarkMode(next);
+    if (next) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  };
 
   // Handle incoming metrics from sandboxed iframe
   const handleMetrics = (metrics: Record<string, number>, t: number) => {
     setMetricsHistory((prev) => {
       const next = [...prev, { t, metrics }];
-      if (next.length > 120) next.shift(); // keep last 120 points
+      if (next.length > 120) next.shift();
       return next;
     });
+
+    // Throttled readout for screen readers
+    const metricStr = Object.entries(metrics)
+      .slice(0, 3)
+      .map(([k, v]) => `${k}: ${v.toFixed(1)}`)
+      .join(", ");
+    setLatestMetricText(metricStr);
   };
 
-  // Handle slider changes
   const handleParamChange = (id: string, value: number) => {
     setCurrentParams((prev) => ({ ...prev, [id]: value }));
   };
 
-  // Handle preset application
-  const handleApplyPreset = (presetParams: Record<string, number>) => {
-    setCurrentParams((prev) => ({ ...prev, ...presetParams }));
+  const handleApplyParams = (params: Record<string, number>) => {
+    setCurrentParams((prev) => ({ ...prev, ...params }));
   };
 
-  // Share link copy
   const handleCopyLink = () => {
     if (typeof window !== "undefined") {
       navigator.clipboard.writeText(window.location.href);
@@ -59,7 +100,12 @@ export function SimulationView({ sim }: SimulationViewProps) {
 
   return (
     <div className="min-h-screen notebook-grid flex flex-col justify-between">
-      {/* Simulation Header */}
+      {/* Hidden aria-live announcement region for screen readers */}
+      <div aria-live="polite" className="sr-only">
+        {latestMetricText}
+      </div>
+
+      {/* Header */}
       <header className="border-b border-paper-200 dark:border-paper-800 bg-paper-50/90 dark:bg-paper-900/90 backdrop-blur sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -72,11 +118,14 @@ export function SimulationView({ sim }: SimulationViewProps) {
             </Link>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="font-bold text-base sm:text-lg tracking-tight truncate max-w-[280px] sm:max-w-md">
+                <h1 className="font-bold text-sm sm:text-base tracking-tight truncate max-w-[200px] sm:max-w-md">
                   {spec.title}
                 </h1>
                 <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-arcade-amber/20 text-paper-900 dark:text-paper-100 border border-arcade-amber/40">
                   {spec.archetype}
+                </span>
+                <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-paper-200 dark:bg-paper-800 text-paper-700 dark:text-paper-300 hidden md:inline">
+                  {spec.level}
                 </span>
               </div>
               <p className="text-xs text-paper-500 truncate max-w-sm hidden sm:block">
@@ -85,22 +134,32 @@ export function SimulationView({ sim }: SimulationViewProps) {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            {/* Dark Mode Toggle */}
+            <button
+              onClick={toggleDarkMode}
+              className="p-2 rounded border border-paper-300 dark:border-paper-700 hover:border-arcade-crimson text-xs font-mono transition text-paper-700 dark:text-paper-300"
+              title="Toggle Dark Mode"
+            >
+              {darkMode ? <Sun className="w-3.5 h-3.5 text-arcade-amber" /> : <Moon className="w-3.5 h-3.5" />}
+            </button>
+
+            {/* Share Link */}
             <button
               onClick={handleCopyLink}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded border border-paper-300 dark:border-paper-700 hover:border-arcade-crimson text-xs font-mono transition"
             >
               {copied ? <Check className="w-3.5 h-3.5 text-arcade-emerald" /> : <Share2 className="w-3.5 h-3.5" />}
-              <span>{copied ? "Copied!" : "Share"}</span>
+              <span className="hidden sm:inline">{copied ? "Copied!" : "Share"}</span>
             </button>
           </div>
         </div>
       </header>
 
-      {/* Main Simulation Layout */}
-      <main className="max-w-7xl mx-auto px-4 py-8 flex-1 w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Left Column (8 cols): Canvas Simulation Viewport & Live Plots */}
-        <div className="lg:col-span-8 flex flex-col gap-6">
+      {/* Main Simulation Viewport & Controls */}
+      <main className="max-w-7xl mx-auto px-4 py-6 flex-1 w-full grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Left Column (7 cols): Canvas Screen & Telemetry Plots */}
+        <div className="lg:col-span-7 flex flex-col gap-6">
           <SimPlayer
             code={code}
             initialParams={initialParams}
@@ -112,72 +171,108 @@ export function SimulationView({ sim }: SimulationViewProps) {
             spec={spec}
             metricsHistory={metricsHistory}
           />
+
+          {/* Keyboard Shortcuts Hint Bar */}
+          <div className="p-3 bg-paper-100/60 dark:bg-paper-800/40 border border-paper-200 dark:border-paper-700 rounded-xl flex flex-wrap items-center justify-between text-xs font-mono text-paper-500">
+            <span className="flex items-center gap-1.5">
+              <Keyboard className="w-3.5 h-3.5 text-arcade-amber" />
+              Keyboard Shortcuts:
+            </span>
+            <div className="flex items-center gap-3 text-[11px]">
+              <span><kbd className="px-1.5 py-0.5 bg-paper-200 dark:bg-paper-700 rounded">Space</kbd> Play/Pause</span>
+              <span><kbd className="px-1.5 py-0.5 bg-paper-200 dark:bg-paper-700 rounded">R</kbd> Reset</span>
+              <span><kbd className="px-1.5 py-0.5 bg-paper-200 dark:bg-paper-700 rounded">→</kbd> Step Once</span>
+            </div>
+          </div>
         </div>
 
-        {/* Right Column (4 cols): Control Tabs */}
-        <div className="lg:col-span-4 flex flex-col gap-4">
-          {/* Tab Switcher */}
-          <div className="flex border-b border-paper-200 dark:border-paper-700">
+        {/* Right Column (5 cols): Interactive Learning Mode Tabs */}
+        <div className="lg:col-span-5 flex flex-col gap-4">
+          {/* Mode Tabs Header */}
+          <div className="flex border-b border-paper-200 dark:border-paper-700 bg-paper-100/50 dark:bg-paper-800/40 p-1 rounded-xl text-xs font-mono">
             <button
-              onClick={() => setActiveTab("explore")}
-              className={`flex items-center gap-1.5 px-4 py-2 font-mono text-xs font-bold border-b-2 transition ${
-                activeTab === "explore"
-                  ? "border-arcade-crimson text-paper-950 dark:text-paper-50"
-                  : "border-transparent text-paper-500 hover:text-paper-800"
+              onClick={() => setActiveMode("explore")}
+              className={`flex-1 py-2 rounded-lg font-bold transition flex items-center justify-center gap-1.5 ${
+                activeMode === "explore"
+                  ? "bg-white dark:bg-paper-900 text-paper-950 dark:text-paper-50 shadow-sm border border-paper-300 dark:border-paper-700"
+                  : "text-paper-500 hover:text-paper-900"
               }`}
             >
-              <Compass className="w-4 h-4" />
-              Explore
+              <Compass className="w-3.5 h-3.5 text-arcade-crimson" />
+              <span>Explore</span>
             </button>
+
             <button
-              onClick={() => setActiveTab("code")}
-              className={`flex items-center gap-1.5 px-4 py-2 font-mono text-xs font-bold border-b-2 transition ${
-                activeTab === "code"
-                  ? "border-arcade-crimson text-paper-950 dark:text-paper-50"
-                  : "border-transparent text-paper-500 hover:text-paper-800"
+              onClick={() => setActiveMode("guided")}
+              className={`flex-1 py-2 rounded-lg font-bold transition flex items-center justify-center gap-1.5 ${
+                activeMode === "guided"
+                  ? "bg-white dark:bg-paper-900 text-paper-950 dark:text-paper-50 shadow-sm border border-paper-300 dark:border-paper-700"
+                  : "text-paper-500 hover:text-paper-900"
               }`}
             >
-              <Code2 className="w-4 h-4" />
-              Code
+              <Sparkles className="w-3.5 h-3.5 text-arcade-amber" />
+              <span>Guided</span>
+            </button>
+
+            <button
+              onClick={() => setActiveMode("quiz")}
+              className={`flex-1 py-2 rounded-lg font-bold transition flex items-center justify-center gap-1.5 ${
+                activeMode === "quiz"
+                  ? "bg-white dark:bg-paper-900 text-paper-950 dark:text-paper-50 shadow-sm border border-paper-300 dark:border-paper-700"
+                  : "text-paper-500 hover:text-paper-900"
+              }`}
+            >
+              <HelpCircle className="w-3.5 h-3.5 text-arcade-cyan" />
+              <span>Quiz</span>
+            </button>
+
+            <button
+              onClick={() => setActiveMode("hood")}
+              className={`flex-1 py-2 rounded-lg font-bold transition flex items-center justify-center gap-1.5 ${
+                activeMode === "hood"
+                  ? "bg-white dark:bg-paper-900 text-paper-950 dark:text-paper-50 shadow-sm border border-paper-300 dark:border-paper-700"
+                  : "text-paper-500 hover:text-paper-900"
+              }`}
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-arcade-emerald" />
+              <span>Proof</span>
             </button>
           </div>
 
-          {/* Active Tab Content */}
-          {activeTab === "explore" ? (
+          {/* Mode Contents */}
+          {activeMode === "explore" && (
             <ParamPanel
               spec={spec}
               currentParams={currentParams}
               onParamChange={handleParamChange}
-              onApplyPreset={handleApplyPreset}
+              onApplyPreset={handleApplyParams}
             />
-          ) : (
-            <div className="bg-paper-950 text-paper-50 p-4 rounded-xl border-2 border-paper-900 font-mono text-xs overflow-x-auto max-h-[500px]">
-              <pre>
-                <code>{code}</code>
-              </pre>
+          )}
+
+          {activeMode === "guided" && (
+            <TourPanel
+              tour={tour}
+              onApplyParams={handleApplyParams}
+              onPlaySimulation={() => {}}
+            />
+          )}
+
+          {activeMode === "quiz" && (
+            <div className="space-y-4">
+              <QuizPanel spec={spec} />
+              <MisconceptionsPanel misconceptions={spec.misconceptions} />
             </div>
           )}
 
-          {/* Educational Objectives Card */}
-          <div className="bg-paper-100/70 dark:bg-paper-800/40 border border-paper-200 dark:border-paper-700 rounded-xl p-4 text-xs">
-            <h3 className="font-bold font-mono uppercase text-paper-700 dark:text-paper-300 mb-2">
-              Key Concepts & Dynamics
-            </h3>
-            <p className="text-paper-600 dark:text-paper-400 mb-3">
-              {spec.dynamics}
-            </p>
-            <ul className="list-disc pl-4 space-y-1 text-paper-600 dark:text-paper-400">
-              {spec.learningObjectives.map((obj: string, i: number) => (
-                <li key={i}>{obj}</li>
-              ))}
-            </ul>
-          </div>
+          {activeMode === "hood" && (
+            <UnderTheHood sim={sim} />
+          )}
         </div>
       </main>
 
       {/* Footer */}
       <footer className="border-t border-paper-200 dark:border-paper-800 py-6 text-center text-xs font-mono text-paper-500">
-        PlayTheory • Interactive Model & Sandbox Runtime
+        PlayTheory • Verified Simulation & Learning Journey
       </footer>
     </div>
   );
