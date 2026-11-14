@@ -82,19 +82,39 @@ export function buildSandboxSrcDoc({
     ${simKitCode}
 
     // --- Generated Simulation Code ---
+    let sim = null;
     try {
-      ${code}
+      sim = (function(SimKit) {
+        ${code}
+        if (typeof sim !== "undefined") return sim;
+        if (typeof window !== "undefined" && window.sim) return window.sim;
+        return null;
+      })(SimKit);
     } catch (err) {
       const overlay = document.getElementById("error-overlay");
       overlay.style.display = "block";
-      overlay.innerText = "Runtime Syntax / Evaluation Error:\\n" + err.stack;
+      overlay.innerText = "Runtime Syntax / Evaluation Error:\\n" + (err.stack || err.message);
       window.parent.postMessage({ type: "sim_error", error: err.message }, "*");
     }
 
     // --- Host Simulation Runner ---
     (function() {
-      if (typeof sim === "undefined") {
-        console.error("Simulation script did not define 'sim'");
+      const overlay = document.getElementById("error-overlay");
+      let hasError = false;
+
+      function reportError(prefix, err) {
+        if (hasError) return;
+        hasError = true;
+        isPlaying = false;
+        if (overlay) {
+          overlay.style.display = "block";
+          overlay.innerText = prefix + ":\n" + (err?.stack || err?.message || String(err));
+        }
+        window.parent.postMessage({ type: "sim_error", error: prefix + ": " + (err?.message || String(err)) }, "*");
+      }
+
+      if (!sim) {
+        reportError("Initialization Error", new Error("Simulation script did not define a valid 'sim' object"));
         return;
       }
 
@@ -120,13 +140,19 @@ export function buildSandboxSrcDoc({
         const dpr = window.devicePixelRatio || 1;
         canvas.width = LOGICAL_WIDTH * dpr;
         canvas.height = LOGICAL_HEIGHT * dpr;
-        ctx.resetTransform?.();
+        if (typeof ctx.resetTransform === "function") {
+          ctx.resetTransform();
+        } else {
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
+        }
         ctx.scale(dpr, dpr);
       }
       window.addEventListener("resize", resizeCanvas);
       resizeCanvas();
 
       function initSimulation() {
+        hasError = false;
+        if (overlay) overlay.style.display = "none";
         try {
           rng = createMulberry32(currentSeed);
           state = sim.init(currentParams, rng);
@@ -138,15 +164,8 @@ export function buildSandboxSrcDoc({
         }
       }
 
-      function reportError(prefix, err) {
-        const overlay = document.getElementById("error-overlay");
-        overlay.style.display = "block";
-        overlay.innerText = prefix + ":\\n" + (err.stack || err.message);
-        window.parent.postMessage({ type: "sim_error", error: prefix + ": " + err.message }, "*");
-      }
-
       function sendMetrics() {
-        if (!state) return;
+        if (!state || hasError) return;
         try {
           const metrics = sim.metrics(state, currentParams);
           window.parent.postMessage({
@@ -160,7 +179,7 @@ export function buildSandboxSrcDoc({
       }
 
       function renderFrame() {
-        if (!state) return;
+        if (!state || hasError) return;
         try {
           ctx.clearRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
           const view = { width: LOGICAL_WIDTH, height: LOGICAL_HEIGHT, t: simTime };
@@ -171,6 +190,8 @@ export function buildSandboxSrcDoc({
       }
 
       function loop(now) {
+        if (hasError) return;
+
         const deltaSeconds = Math.min((now - lastFrameTime) / 1000, 0.25);
         lastFrameTime = now;
 
@@ -182,7 +203,6 @@ export function buildSandboxSrcDoc({
               state = sim.step(state, currentParams, FIXED_DT, rng);
             } catch (err) {
               reportError("Error in sim.step()", err);
-              isPlaying = false;
               break;
             }
             simTime += FIXED_DT;
@@ -197,7 +217,9 @@ export function buildSandboxSrcDoc({
         }
 
         renderFrame();
-        requestAnimationFrame(loop);
+        if (!hasError) {
+          requestAnimationFrame(loop);
+        }
       }
 
       // Handle Parent Commands
@@ -212,9 +234,17 @@ export function buildSandboxSrcDoc({
           case "reset":
             if (data.seed !== undefined) currentSeed = data.seed;
             initSimulation();
+            if (isPlaying) {
+              lastFrameTime = performance.now();
+              requestAnimationFrame(loop);
+            }
             break;
           case "play":
-            isPlaying = true;
+            if (!isPlaying) {
+              isPlaying = true;
+              lastFrameTime = performance.now();
+              requestAnimationFrame(loop);
+            }
             break;
           case "pause":
             isPlaying = false;
@@ -222,9 +252,13 @@ export function buildSandboxSrcDoc({
           case "toggle_play":
             isPlaying = !isPlaying;
             window.parent.postMessage({ type: "play_state_changed", isPlaying }, "*");
+            if (isPlaying) {
+              lastFrameTime = performance.now();
+              requestAnimationFrame(loop);
+            }
             break;
           case "step_once":
-            if (state) {
+            if (state && !hasError) {
               try {
                 state = sim.step(state, currentParams, FIXED_DT, rng);
                 simTime += FIXED_DT;

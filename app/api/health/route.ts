@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getStore } from "@/lib/store";
+import { getActiveModelInfo } from "@/lib/llm/gemini";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +15,7 @@ export async function GET() {
     storeHealthy = false;
   }
 
-  const llmProvider = process.env.LLM_PROVIDER || "unconfigured";
+  const modelInfo = getActiveModelInfo();
   const llmConfigured = Boolean(process.env.LLM_API_KEY && process.env.LLM_API_KEY.trim().length > 0);
   const upstashConfigured = Boolean(
     process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
@@ -33,9 +34,9 @@ export async function GET() {
         upstashConfigured,
         llm: {
           configured: llmConfigured,
-          provider: llmProvider,
-          planModel: process.env.LLM_MODEL_PLAN || "gemini-2.5-pro",
-          buildModel: process.env.LLM_MODEL_BUILD || "gemini-2.5-flash",
+          provider: modelInfo.provider,
+          planModel: modelInfo.planModel,
+          buildModel: modelInfo.buildModel,
         },
       },
       version: "0.1.0",

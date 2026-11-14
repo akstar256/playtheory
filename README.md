@@ -1,7 +1,7 @@
 # PlayTheory 🎮🧪
 
 > **From natural-language concept to working, verified, interactive simulation in seconds.**  
-> Built for **IceHacks 2026** (Targeting: *Best Deployed / Shipped App* & *Best AI Hack*).
+> Autonomous Physics & Computational Simulation Engine with AST Loop Guards and Live Self-Repair.
 
 ---
 
@@ -177,7 +177,7 @@ playtheory/
       sims/[slug]/          # Slug retrieval & hit tracking
     s/[slug]/               # Interactive simulation view & player
     status/                 # Live status & telemetry dashboard
-    about/                  # Project architecture & IceHacks mission
+    about/                  # Project architecture & mission
   components/               # React UI components
     SimPlayer.tsx           # Sandboxed iframe host & controls
     ParamPanel.tsx          # Real-time sliders & reset triggers
@@ -209,14 +209,14 @@ playtheory/
 
 ---
 
-## 🏆 IceHacks 2026 Submission Highlights
+## 🏆 Key Architectural & Production Highlights
 
-- **Best Deployed / Shipped App:**
+- **Production Deployment:**
   - Live on Vercel at `https://playtheory-gamma.vercel.app`
   - Connected to serverless Upstash Redis with sub-50ms REST latency
   - Responsive design supporting desktop, tablet, and mobile (390px viewport verified)
   - Zero mock data in production; automated smoke tests verify live health
-- **Best AI Hack:**
+- **Autonomous Verification & Compound AI:**
   - Two-phase compound AI architecture separating planning from code synthesis
   - Real-time client-side AST instrumentation eliminating infinite loop exploits
   - Autonomous self-repair loop with HMAC signed tokens capping attempts at 3
@@ -226,4 +226,4 @@ playtheory/
 
 ## 📄 License
 
-MIT License. Built for **IceHacks 2026**.
+MIT License. PlayTheory Autonomous Engine.

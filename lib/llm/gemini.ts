@@ -1,11 +1,26 @@
 import { z } from "zod";
 import { LLMAdapter, LLMResult, GenerateJSONOptions, StreamOptions, TokenUsage } from "./types";
 
-const FALLBACK_MODELS = [
+export const FALLBACK_MODELS = [
   "gemini-3.5-flash-lite",
   "gemini-3.5-flash",
   "gemini-3.1-flash-lite",
 ];
+
+export function getActiveModelInfo() {
+  const rawPlan = process.env.LLM_MODEL_PLAN;
+  const rawBuild = process.env.LLM_MODEL_BUILD;
+
+  const planModel = (rawPlan && !rawPlan.includes("2.5")) ? rawPlan : "gemini-3.5-flash-lite";
+  const buildModel = (rawBuild && !rawBuild.includes("2.5")) ? rawBuild : "gemini-3.5-flash-lite";
+
+  return {
+    provider: process.env.LLM_PROVIDER || "gemini",
+    planModel,
+    buildModel,
+    fallbacks: FALLBACK_MODELS,
+  };
+}
 
 export class GeminiAdapter implements LLMAdapter {
   private apiKey: string;
@@ -14,8 +29,9 @@ export class GeminiAdapter implements LLMAdapter {
 
   constructor(apiKey?: string) {
     this.apiKey = apiKey || process.env.LLM_API_KEY || "";
-    this.defaultPlanModel = process.env.LLM_MODEL_PLAN || "gemini-3.5-flash-lite";
-    this.defaultBuildModel = process.env.LLM_MODEL_BUILD || "gemini-3.5-flash-lite";
+    const activeInfo = getActiveModelInfo();
+    this.defaultPlanModel = activeInfo.planModel;
+    this.defaultBuildModel = activeInfo.buildModel;
   }
 
   private calculateCost(model: string, promptTokens: number, completionTokens: number): number {
@@ -66,7 +82,8 @@ export class GeminiAdapter implements LLMAdapter {
 
   async generateJSON<T extends z.ZodTypeAny>(opts: GenerateJSONOptions<T>): Promise<LLMResult<z.infer<T>>> {
     const startTime = Date.now();
-    const requestedModel = opts.model || this.defaultPlanModel;
+    const rawModel = opts.model || this.defaultPlanModel;
+    const requestedModel = (rawModel && !rawModel.includes("2.5")) ? rawModel : this.defaultPlanModel;
     const candidates = Array.from(new Set([requestedModel, ...FALLBACK_MODELS]));
 
     if (!this.apiKey) {
@@ -157,7 +174,8 @@ export class GeminiAdapter implements LLMAdapter {
 
   async stream(opts: StreamOptions): Promise<LLMResult<string>> {
     const startTime = Date.now();
-    const requestedModel = opts.model || this.defaultBuildModel;
+    const rawModel = opts.model || this.defaultBuildModel;
+    const requestedModel = (rawModel && !rawModel.includes("2.5")) ? rawModel : this.defaultBuildModel;
     const candidates = Array.from(new Set([requestedModel, ...FALLBACK_MODELS]));
 
     if (!this.apiKey) {

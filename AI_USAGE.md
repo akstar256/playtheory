@@ -1,6 +1,6 @@
 # PlayTheory — AI Usage & Tooling Disclosure
 
-> Submitted for **IceHacks 2026** in full compliance with hackathon rules regarding transparent disclosure of artificial intelligence assistance, models, and developer tooling.
+> Transparent disclosure of artificial intelligence assistance, models, and engineering tooling.
 
 ---
 
@@ -16,22 +16,22 @@
 
 ## 2. In-App Runtime AI Models & Multi-Stage Architecture
 
-PlayTheory does not treat LLMs as a single black box. Instead, it employs a **compound AI architecture** with distinct specialized models assigned to each stage:
+PlayTheory does not treat LLMs as a single black box. Instead, it employs a **compound AI architecture** with distinct specialized models and automatic failover:
 
 ### 2.1 Simulation Planner
-- **Model:** `gemini-2.5-pro` (via Google AI Studio)
+- **Model:** `gemini-3.5-flash-lite` / `gemini-3.5-flash` (via Google AI Studio with automatic fallback chain)
 - **Role:** High-reasoning mathematical decomposition and visual design.
 - **Output:** Zod-validated `SimSpec` JSON schema defining equations, state variables, parameter ranges, visual encodings, and active learning tour steps.
 - **Techniques:** JSON schema mode enforcement, parameter sensitivity boundaries, safety filtering against dangerous chemical/weapon synthesis.
 
 ### 2.2 Code Builder
-- **Model:** `gemini-2.5-flash` (via Google AI Studio)
+- **Model:** `gemini-3.5-flash-lite` / `gemini-3.5-flash` (via Google AI Studio with automatic fallback chain)
 - **Role:** Fast, low-latency ES2020 JavaScript simulation authoring.
 - **Output:** SSE token stream yielding an isolated `sim` module implementing `init`, `step`, `metrics`, and `draw`.
 - **Techniques:** Few-shot prompting conditioned on the 5 hand-crafted archetype exemplars, strict mathematical helper constraints (`SimKit`).
 
 ### 2.3 Autonomous Self-Repair Engine
-- **Model:** `gemini-2.5-flash` (via Google AI Studio)
+- **Model:** `gemini-3.5-flash-lite` / `gemini-3.5-flash` (via Google AI Studio with automatic fallback chain)
 - **Role:** Error correction and targeted bug remediation.
 - **Input:** Failing check ID, error stack trace, failing simulation code, and original `SimSpec`.
 - **Techniques:** Surgical code patching with AST verification re-runs, secured by signed HMAC-SHA256 job tokens capped at 3 attempts.

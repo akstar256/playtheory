@@ -17,8 +17,8 @@ The following production environment variables are configured in the Vercel dash
 |---|---|---|
 | `LLM_PROVIDER` | `gemini` | Primary LLM provider |
 | `LLM_API_KEY` | `AQ.Ab8RN6...` | Google AI Studio API key |
-| `LLM_MODEL_PLAN` | `gemini-2.5-pro` | Model for SimSpec JSON planning |
-| `LLM_MODEL_BUILD` | `gemini-2.5-flash` | Fast model for ES2020 JavaScript synthesis |
+| `LLM_MODEL_PLAN` | `gemini-3.5-flash-lite` | Model for SimSpec JSON planning |
+| `LLM_MODEL_BUILD` | `gemini-3.5-flash-lite` | Fast model for ES2020 JavaScript synthesis |
 | `UPSTASH_REDIS_REST_URL` | `https://vital-shad-130406.upstash.io` | Upstash Redis REST endpoint |
 | `UPSTASH_REDIS_REST_TOKEN` | `gQAAAAAA...` | Upstash Redis REST authentication token |
 | `JOB_TOKEN_SECRET` | *(32+ hex characters)* | HMAC-SHA256 secret for signing repair job tokens |
@@ -51,7 +51,7 @@ npm run seed
 - [x] `/api/health` reports status `"ok"` with Upstash Redis ping latency < 50ms
 - [x] `/api/stats` returns accurate operational counts and telemetry
 - [x] `/status` page renders operational dashboard with 4 KPI cards
-- [x] `/about` page renders complete architecture and IceHacks track credentials
+- [x] `/about` page renders complete architecture and mission overview
 - [x] 5 archetype exemplar simulations play at 60 FPS in sandboxed iframes:
   - `/s/particles-exemplar` (Projectile Motion)
   - `/s/ode_phase-exemplar` (Lotka-Volterra Predator-Prey)

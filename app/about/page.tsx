@@ -101,14 +101,14 @@ export default function AboutPage() {
             <div className="flex items-start gap-3">
               <span className="font-bold text-arcade-crimson shrink-0">01.</span>
               <div>
-                <strong>Planner (Gemini 2.5 Pro):</strong> Ingests natural-language topic, selects an archetype (<code>particles</code>, <code>ode_phase</code>, <code>agents</code>, <code>cellular_automaton</code>, <code>queue_flow</code>), and outputs validated <code>SimSpec</code> JSON with strict bounds.
+                <strong>Planner (Google Gemini & Multi-Model Chain):</strong> Ingests natural-language topic, selects an archetype (<code>particles</code>, <code>ode_phase</code>, <code>agents</code>, <code>cellular_automaton</code>, <code>queue_flow</code>), and outputs validated <code>SimSpec</code> JSON with strict bounds.
               </div>
             </div>
 
             <div className="flex items-start gap-3">
               <span className="font-bold text-arcade-crimson shrink-0">02.</span>
               <div>
-                <strong>Builder (Gemini 2.5 Flash):</strong> Streams ES2020 simulation code conforming to the <code>init/step/metrics/draw</code> interface, utilizing the built-in <code>SimKit</code> mathematics library.
+                <strong>Builder (Google Gemini & Multi-Model Chain):</strong> Streams ES2020 simulation code conforming to the <code>init/step/metrics/draw</code> interface, utilizing the built-in <code>SimKit</code> mathematics library.
               </div>
             </div>
 
