@@ -40,15 +40,17 @@
 ---
 
 ## Phase 2: Verifier and repair loop (about 6 h)
-- [ ] Implement static checks (`lib/verify/static.ts`): Acorn parse, banned identifiers scan, size cap (<24KB), interface check
-- [ ] Implement loop-guard AST instrumentation (`lib/verify/loopGuard.ts`): iteration counters, 1e6 budget limit
-- [ ] Implement headless model checks (`lib/verify/modelChecks.ts`): 600 steps execution, finite checks, metric presence, determinism, parameter sensitivity (dead slider detection), bounded values
-- [ ] Implement draw checks (`lib/verify/drawChecks.ts`): offscreen canvas render at t=0, t=2, t=5, pixel variance (blank detection), animation changes
-- [ ] Assemble pure `verify(code, spec, env)` returning typed `VerificationReport`
-- [ ] Implement signed HMAC job tokens (`lib/security/jobToken.ts`)
-- [ ] Implement `/api/repair` endpoint and client repair state machine (`lib/pipeline/orchestrator.ts`)
-- [ ] Build Pipeline Timeline UI: live streaming code, stages, and real-time pass/fail check rows
-- [ ] Add comprehensive test suite with fixtures for every failure mode (infinite loops, NaNs, dead sliders, blank canvas, banned APIs)
+- [x] Implement static checks (`lib/verify/static.ts`): Acorn parse, banned identifiers scan, size cap (<24KB), interface check
+- [x] Implement loop-guard AST instrumentation (`lib/verify/loopGuard.ts`): iteration counters, 1e6 budget limit
+- [x] Implement headless model checks (`lib/verify/modelChecks.ts`): 600 steps execution, finite checks, metric presence, determinism, parameter sensitivity (dead slider detection), bounded values
+- [x] Implement draw checks (`lib/verify/drawChecks.ts`): offscreen canvas render at t=0, t=2, t=5, pixel variance (blank detection), animation changes
+- [x] Assemble pure `verify(code, spec, env)` returning typed `VerificationReport` (`lib/verify/index.ts`)
+- [x] Implement signed HMAC job tokens (`lib/security/jobToken.ts`)
+- [x] Implement `/api/repair` endpoint and client repair state machine (`lib/pipeline/orchestrator.ts`)
+- [x] Build Pipeline Timeline UI: live streaming code, stages, and real-time pass/fail check rows (`components/PipelineTimeline.tsx`)
+- [x] Add comprehensive test suite with fixtures for every failure mode (infinite loops, NaNs, dead sliders, blank canvas, banned APIs) (`tests/unit/verifier.test.ts`)
+
+*Acceptance Criteria:* Every bad fixture test fails with the right check id; a broken generation is repaired live; after 3 attempts fallback activates. (PASSED ✅)
 
 *Acceptance Criteria:* Every bad fixture test fails with the right check id; a broken generation is repaired live; after 3 attempts fallback activates.
 

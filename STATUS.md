@@ -2,7 +2,7 @@
 
 > Updated after each milestone. Single source of truth for current state and next immediate steps.
 
-**Current Phase:** Phase 2 (Verifier and Self-Repair Loop)  
+**Current Phase:** Phase 3 (Learning Experience and UI Polish)  
 **Last Updated:** 2026-11-14  
 **Live Production URL:** https://playtheory-gamma.vercel.app  
 
@@ -22,23 +22,25 @@
 - [x] Three hand-crafted archetype exemplars (`particles`, `ode_phase`, `agents`)
 - [x] Sandboxed iframe runtime shell with strict CSP and `SimKit` mathematical helpers
 - [x] Interactive Simulation Player (`SimPlayer`), Parameter Sliders (`ParamPanel`), and Canvas Telemetry Plots (`Plots`)
-- [x] Full end-to-end concept prompt generator on homepage
-- [x] Unit test suite passing 19/19 tests across schemas, math helpers, archetypes, store, and health
+- [x] 12-point automated verifier harness (`lib/verify/`): static parse/banned/size, loop-guard instrumentation, 600-step headless model run, finite check, metrics check, determinism, dead slider sensitivity, canvas draw checks
+- [x] Autonomous self-repair loop (`/api/repair`) with signed HMAC job tokens (max 3 attempts)
+- [x] Live Pipeline Timeline UI (`components/PipelineTimeline.tsx`) with real-time pass/fail check rows
+- [x] Unit test suite passing 29/29 tests across all 7 test suites
 
 ---
 
 ### What Is In Progress / Broken
-- [ ] Phase 2: Verifier harness (12 checks: static AST, loop-guard, headless worker, canvas variance) and self-repair loop (`/api/repair`)
+- [ ] Phase 3: Learning experience & UI polish (Guided tour with predict-then-reveal, quiz panel, misconceptions, under-the-hood inspector, responsive 390px mobile layout)
 
 ---
 
 ### What Is Next
-1. Commit Phase 1 changes and push to `origin/main` to trigger Vercel deployment.
-2. Implement AST loop-guard instrumentation with Acorn in `lib/verify/loopGuard.ts`.
-3. Implement static checks and banned identifier analysis in `lib/verify/static.ts`.
-4. Implement headless worker checks (600 steps, finite metrics, dead slider sensitivity) in `lib/verify/modelChecks.ts`.
-5. Implement offscreen canvas variance and animation checks in `lib/verify/drawChecks.ts`.
-6. Implement `/api/repair` with client state machine orchestrator and live timeline UI.
+1. Commit Phase 2 changes with a natural language message and push to GitHub.
+2. Implement Guided Tour pipeline (`/api/guide` and `lib/pipeline/guide.ts`).
+3. Build Tour Panel with "predict-then-reveal" interactive steps.
+4. Build Interactive Quiz Panel with score tracking, explanations, and misconceptions tab.
+5. Build "Under the hood" tab: live spec JSON viewer, verification report, and repair history.
+6. Mobile layout and accessibility pass (WCAG 2.1 AA).
 
 ---
 

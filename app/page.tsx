@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Sparkles, Terminal, Activity, Loader2, ArrowRight } from "lucide-react";
+import { PipelineOrchestrator, PipelineState } from "@/lib/pipeline/orchestrator";
+import { PipelineTimeline } from "@/components/PipelineTimeline";
 
 const EXAMPLE_CONCEPTS = [
   { title: "Projectile Motion with Drag", slug: "particles-exemplar", prompt: "projectile motion with air drag and crosswind" },
@@ -18,121 +20,29 @@ export default function Home() {
   const router = useRouter();
   const [concept, setConcept] = useState("");
   const [level, setLevel] = useState<"beginner" | "intermediate" | "advanced">("intermediate");
-  const [statusMessage, setStatusMessage] = useState<string | null>(null);
-  const [isBuilding, setIsBuilding] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [pipelineState, setPipelineState] = useState<PipelineState | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const orchestratorRef = useRef<PipelineOrchestrator | null>(null);
+
+  useEffect(() => {
+    orchestratorRef.current = new PipelineOrchestrator();
+    return orchestratorRef.current.subscribe((state) => {
+      setPipelineState(state);
+    });
+  }, []);
 
   const handleGenerate = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!concept.trim() || isBuilding) return;
+    if (!concept.trim() || isGenerating || !orchestratorRef.current) return;
 
-    setIsBuilding(true);
-    setErrorMessage(null);
-
+    setIsGenerating(true);
     try {
-      // Step 1: Planning
-      setStatusMessage("Phase 1: Designing mathematical model & SimSpec...");
-      const planRes = await fetch("/api/plan", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ concept: concept.trim(), level }),
-      });
-
-      const planData = await planRes.json();
-      if (!planRes.ok) {
-        throw new Error(planData.error?.message || "Failed to generate simulation plan");
+      const redirectUrl = await orchestratorRef.current.run(concept.trim(), level);
+      if (redirectUrl) {
+        setTimeout(() => router.push(redirectUrl), 1000);
       }
-
-      if (planData.type === "cached") {
-        setStatusMessage("Loaded from cache! Redirecting...");
-        router.push(`/s/${planData.slug}`);
-        return;
-      }
-
-      if (planData.type === "refusal") {
-        throw new Error(planData.reason || "Content cannot be simulated safely");
-      }
-
-      const spec = planData.spec;
-
-      // Step 2: Building Code via SSE Stream
-      setStatusMessage(`Phase 2: Synthesizing '${spec.archetype}' simulation module...`);
-      const buildRes = await fetch("/api/build", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ spec }),
-      });
-
-      if (!buildRes.ok) {
-        throw new Error("Failed to connect to code builder stream");
-      }
-
-      const reader = buildRes.body?.getReader();
-      if (!reader) throw new Error("Stream reader unavailable");
-
-      const decoder = new TextDecoder();
-      let generatedCode = "";
-      let codeHash = "";
-      let buffer = "";
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split("\n");
-        buffer = lines.pop() || "";
-
-        for (const line of lines) {
-          if (line.startsWith("data: ")) {
-            const jsonStr = line.slice(6).trim();
-            try {
-              const data = JSON.parse(jsonStr);
-              if (data.type === "done") {
-                generatedCode = data.code;
-                codeHash = data.codeHash;
-              } else if (data.type === "error") {
-                throw new Error(data.message);
-              }
-            } catch {
-              // ignore partial lines
-            }
-          }
-        }
-      }
-
-      if (!generatedCode) {
-        throw new Error("Builder completed without generating code");
-      }
-
-      // Step 3: Persisting simulation
-      setStatusMessage("Phase 3: Launching sandboxed runtime...");
-      const saveRes = await fetch("/api/sims", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          spec,
-          code: generatedCode,
-          report: {
-            status: "pass",
-            attempt: 0,
-            codeHash,
-            checks: [{ id: "static.parse", status: "pass" }],
-            timings: { stepMsAvg: 0.5, drawMsAvg: 1.0 },
-          },
-        }),
-      });
-
-      const saveData = await saveRes.json();
-      if (!saveRes.ok) {
-        throw new Error(saveData.error?.message || "Failed to save simulation");
-      }
-
-      router.push(saveData.url);
-    } catch (err: any) {
-      setErrorMessage(err.message || "An unexpected error occurred during generation");
-      setIsBuilding(false);
-      setStatusMessage(null);
+    } catch {
+      setIsGenerating(false);
     }
   };
 
@@ -155,7 +65,7 @@ export default function Home() {
             </span>
             <span className="font-bold text-lg tracking-tight">PlayTheory</span>
             <span className="text-xs bg-arcade-emerald/20 text-arcade-emerald border border-arcade-emerald/30 px-2 py-0.5 rounded-full font-mono">
-              Vertical Slice Active
+              Phase 2 Verifier Active
             </span>
           </div>
 
@@ -177,7 +87,7 @@ export default function Home() {
         {/* Status Pill */}
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-paper-300 dark:border-paper-700 bg-paper-100 dark:bg-paper-800 text-xs font-mono mb-8">
           <span className="w-2 h-2 rounded-full bg-arcade-emerald animate-pulse" />
-          <span>IceHacks 2026 • AI Generation Active</span>
+          <span>IceHacks 2026 • 12-Point Automated Verifier & Repair Loop</span>
         </div>
 
         {/* Hero Headline */}
@@ -194,7 +104,7 @@ export default function Home() {
         {/* Prompt Input Form */}
         <form
           onSubmit={handleGenerate}
-          className="w-full max-w-2xl bg-white dark:bg-paper-900 border-2 border-paper-900 dark:border-paper-300 rounded-xl p-3 shadow-[4px_4px_0px_0px_rgba(24,23,21,1)] dark:shadow-[4px_4px_0px_0px_rgba(250,247,238,1)] transition mb-4 text-left"
+          className="w-full max-w-2xl bg-white dark:bg-paper-900 border-2 border-paper-900 dark:border-paper-300 rounded-xl p-3 shadow-[4px_4px_0px_0px_rgba(24,23,21,1)] dark:shadow-[4px_4px_0px_0px_rgba(250,247,238,1)] transition mb-6 text-left"
         >
           <div className="flex flex-col sm:flex-row gap-2">
             <div className="flex-1 flex items-center px-3 py-2">
@@ -203,20 +113,20 @@ export default function Home() {
                 type="text"
                 value={concept}
                 onChange={(e) => setConcept(e.target.value)}
-                disabled={isBuilding}
+                disabled={isGenerating}
                 placeholder="What do you want to play with? (e.g. TCP congestion control)"
                 className="w-full bg-transparent outline-none text-paper-900 dark:text-paper-50 placeholder:text-paper-400 text-base"
               />
             </div>
             <button
               type="submit"
-              disabled={isBuilding || !concept.trim()}
+              disabled={isGenerating || !concept.trim()}
               className="bg-paper-900 text-paper-50 dark:bg-paper-50 dark:text-paper-950 font-bold px-6 py-3 rounded-lg flex items-center justify-center gap-2 hover:bg-arcade-crimson hover:text-white dark:hover:bg-arcade-crimson dark:hover:text-white transition disabled:opacity-50 disabled:cursor-not-allowed text-sm uppercase tracking-wide shrink-0"
             >
-              {isBuilding ? (
+              {isGenerating ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin text-arcade-amber" />
-                  Building...
+                  Running...
                 </>
               ) : (
                 <>
@@ -238,7 +148,7 @@ export default function Home() {
                   value={lvl}
                   checked={level === lvl}
                   onChange={() => setLevel(lvl)}
-                  disabled={isBuilding}
+                  disabled={isGenerating}
                   className="accent-arcade-crimson"
                 />
                 <span className={level === lvl ? "font-bold text-paper-900 dark:text-paper-100" : "text-paper-500"}>
@@ -249,19 +159,9 @@ export default function Home() {
           </div>
         </form>
 
-        {/* Live Generation Progress Notification */}
-        {isBuilding && (
-          <div className="w-full max-w-2xl bg-arcade-amber/10 border border-arcade-amber/30 text-paper-900 dark:text-paper-100 p-3 rounded-lg flex items-center gap-3 font-mono text-xs mb-6">
-            <Loader2 className="w-4 h-4 animate-spin text-arcade-amber shrink-0" />
-            <span className="truncate">{statusMessage || "Processing..."}</span>
-          </div>
-        )}
-
-        {/* Error Notification */}
-        {errorMessage && (
-          <div className="w-full max-w-2xl bg-arcade-crimson/10 border border-arcade-crimson/30 text-arcade-crimson p-3 rounded-lg text-xs font-mono mb-6 text-left">
-            <span className="font-bold">Error:</span> {errorMessage}
-          </div>
+        {/* Live Pipeline Timeline during generation */}
+        {pipelineState && pipelineState.stage !== "idle" && (
+          <PipelineTimeline state={pipelineState} />
         )}
 
         {/* Example Presets Chips */}
@@ -273,7 +173,7 @@ export default function Home() {
             <button
               key={ex.title}
               onClick={() => selectExample(ex)}
-              disabled={isBuilding}
+              disabled={isGenerating}
               className="text-xs font-mono bg-paper-100 hover:bg-paper-200 dark:bg-paper-800 dark:hover:bg-paper-700 border border-paper-300 dark:border-paper-700 px-2.5 py-1 rounded text-paper-800 dark:text-paper-200 cursor-pointer hover:border-arcade-crimson transition flex items-center gap-1"
             >
               <span>{ex.title}</span>
