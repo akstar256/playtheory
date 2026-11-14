@@ -1,6 +1,12 @@
 import { SimSpec } from "@/lib/schemas/simSpec";
 import { VerificationReport } from "@/lib/schemas/contracts";
 import { verify } from "@/lib/verify";
+import {
+  planWithLocalLM,
+  buildWithLocalLM,
+  repairWithLocalLM,
+  DEFAULT_LOCAL_LM_CONFIG,
+} from "@/lib/llm/localGemma";
 
 export type PipelineStage =
   | "idle"
@@ -11,10 +17,17 @@ export type PipelineStage =
   | "passed"
   | "fallback";
 
+export interface OrchestratorRunOptions {
+  provider?: "cloud" | "local";
+  endpoint?: string;
+  model?: string;
+}
+
 export interface PipelineState {
   stage: PipelineStage;
   concept: string;
   level: "beginner" | "intermediate" | "advanced";
+  provider?: "cloud" | "local";
   spec: SimSpec | null;
   code: string;
   codeStream: string;
@@ -38,6 +51,7 @@ export class PipelineOrchestrator {
       stage: "idle",
       concept: "",
       level: "intermediate",
+      provider: "cloud",
       spec: null,
       code: "",
       codeStream: "",
@@ -65,11 +79,18 @@ export class PipelineOrchestrator {
     this.listeners.forEach((fn) => fn(current));
   }
 
-  async run(concept: string, level: "beginner" | "intermediate" | "advanced" = "intermediate"): Promise<string> {
+  async run(
+    concept: string,
+    level: "beginner" | "intermediate" | "advanced" = "intermediate",
+    options?: OrchestratorRunOptions
+  ): Promise<string> {
+    const isLocal = options?.provider === "local";
+
     this.update({
       stage: "planning",
       concept,
       level,
+      provider: options?.provider || "cloud",
       spec: null,
       code: "",
       codeStream: "",
@@ -81,83 +102,114 @@ export class PipelineOrchestrator {
     });
 
     try {
+      let spec: SimSpec;
+
       // 1. Stage: Planning
-      const planRes = await fetch("/api/plan", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ concept, level }),
-      });
+      if (isLocal) {
+        spec = await planWithLocalLM(concept, level, {
+          endpoint: options?.endpoint || DEFAULT_LOCAL_LM_CONFIG.endpoint,
+          model: options?.model || DEFAULT_LOCAL_LM_CONFIG.model,
+        });
+        this.update({ spec, stage: "building" });
+      } else {
+        const planRes = await fetch("/api/plan", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ concept, level }),
+        });
 
-      const planData = await planRes.json();
-      if (!planRes.ok) {
-        throw new Error(planData.error?.message || "Failed to generate simulation plan");
+        const planData = await planRes.json();
+        if (!planRes.ok) {
+          throw new Error(planData.error?.message || "Failed to generate simulation plan");
+        }
+
+        if (planData.type === "cached") {
+          this.update({ stage: "passed", slug: planData.slug });
+          return `/s/${planData.slug}`;
+        }
+
+        if (planData.type === "refusal") {
+          throw new Error(planData.reason || "Concept cannot be simulated safely.");
+        }
+
+        spec = planData.spec;
+        this.update({ spec, stage: "building" });
       }
 
-      if (planData.type === "cached") {
-        this.update({ stage: "passed", slug: planData.slug });
-        return `/s/${planData.slug}`;
-      }
-
-      if (planData.type === "refusal") {
-        throw new Error(planData.reason || "Concept cannot be simulated safely.");
-      }
-
-      const spec: SimSpec = planData.spec;
-      this.update({ spec, stage: "building" });
-
-      // 2. Stage: Building via SSE Stream
-      const buildRes = await fetch("/api/build", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ spec }),
-      });
-
-      if (!buildRes.ok) {
-        throw new Error("Failed to connect to code builder stream");
-      }
-
-      const reader = buildRes.body?.getReader();
-      if (!reader) throw new Error("Stream reader unavailable");
-
-      const decoder = new TextDecoder();
-      let accumulatedCode = "";
+      // 2. Stage: Building
+      let currentCode = "";
       let jobToken = "";
-      let buffer = "";
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
+      if (isLocal) {
+        let streamAccumulator = "";
+        const buildResult = await buildWithLocalLM(
+          spec,
+          (chunk) => {
+            streamAccumulator += chunk;
+            this.update({ codeStream: streamAccumulator });
+          },
+          {
+            endpoint: options?.endpoint || DEFAULT_LOCAL_LM_CONFIG.endpoint,
+            model: options?.model || DEFAULT_LOCAL_LM_CONFIG.model,
+          }
+        );
+        currentCode = buildResult.code;
+        jobToken = "local_gemma_" + Date.now();
+      } else {
+        // Cloud SSE stream via /api/build
+        const buildRes = await fetch("/api/build", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ spec }),
+        });
 
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split("\n");
-        buffer = lines.pop() || "";
+        if (!buildRes.ok) {
+          throw new Error("Failed to connect to code builder stream");
+        }
 
-        for (const line of lines) {
-          if (line.startsWith("data: ")) {
-            const jsonStr = line.slice(6).trim();
-            try {
-              const event = JSON.parse(jsonStr);
-              if (event.type === "code_chunk") {
-                accumulatedCode += event.chunk;
-                this.update({ codeStream: accumulatedCode });
-              } else if (event.type === "done") {
-                accumulatedCode = event.code;
-                jobToken = event.jobToken;
-              } else if (event.type === "error") {
-                throw new Error(event.message);
+        const reader = buildRes.body?.getReader();
+        if (!reader) throw new Error("Stream reader unavailable");
+
+        const decoder = new TextDecoder();
+        let accumulatedCode = "";
+        let buffer = "";
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() || "";
+
+          for (const line of lines) {
+            if (line.startsWith("data: ")) {
+              const jsonStr = line.slice(6).trim();
+              try {
+                const event = JSON.parse(jsonStr);
+                if (event.type === "code_chunk") {
+                  accumulatedCode += event.chunk;
+                  this.update({ codeStream: accumulatedCode });
+                } else if (event.type === "done") {
+                  accumulatedCode = event.code;
+                  jobToken = event.jobToken;
+                } else if (event.type === "error") {
+                  throw new Error(event.message);
+                }
+              } catch {
+                // ignore partial lines
               }
-            } catch {
-              // ignore partial lines
             }
           }
         }
+
+        currentCode = accumulatedCode;
       }
 
-      if (!accumulatedCode) {
+      if (!currentCode) {
         throw new Error("Builder terminated without generating code.");
       }
 
-      let currentCode = accumulatedCode;
       this.update({ code: currentCode, jobToken, stage: "verifying" });
 
       // 3. Stage: Verification & Self-Repair Loop
@@ -178,7 +230,6 @@ export class PipelineOrchestrator {
           break; // Verification passed!
         }
 
-        // Check if repair attempts exhausted
         if (attempts >= 3) {
           break;
         }
@@ -186,28 +237,41 @@ export class PipelineOrchestrator {
         attempts++;
         this.update({ stage: "repairing", repairAttempt: attempts });
 
-        // Call Repair API
-        const repairRes = await fetch("/api/repair", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            jobToken,
+        // Call Repair
+        if (isLocal) {
+          currentCode = await repairWithLocalLM(
             spec,
-            code: currentCode,
-            errors: report.checks.filter((c) => c.status === "fail"),
-            attempt: attempts,
-            simplify: attempts === 3,
-          }),
-        });
+            currentCode,
+            report.checks.filter((c) => c.status === "fail"),
+            {
+              endpoint: options?.endpoint || DEFAULT_LOCAL_LM_CONFIG.endpoint,
+              model: options?.model || DEFAULT_LOCAL_LM_CONFIG.model,
+            }
+          );
+          this.update({ code: currentCode });
+        } else {
+          const repairRes = await fetch("/api/repair", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              jobToken,
+              spec,
+              code: currentCode,
+              errors: report.checks.filter((c) => c.status === "fail"),
+              attempt: attempts,
+              simplify: attempts === 3,
+            }),
+          });
 
-        const repairData = await repairRes.json();
-        if (!repairRes.ok || !repairData.success) {
-          throw new Error(repairData.error?.message || "Repair loop execution failed");
+          const repairData = await repairRes.json();
+          if (!repairRes.ok || !repairData.success) {
+            throw new Error(repairData.error?.message || "Repair loop execution failed");
+          }
+
+          currentCode = repairData.code;
+          jobToken = repairData.jobToken;
+          this.update({ code: currentCode, jobToken });
         }
-
-        currentCode = repairData.code;
-        jobToken = repairData.jobToken;
-        this.update({ code: currentCode, jobToken });
       }
 
       // If still failing after 3 attempts, activate graceful fallback

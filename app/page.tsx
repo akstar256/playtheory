@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Sparkles, Terminal, Activity, Loader2, ArrowRight } from "lucide-react";
 import { PipelineOrchestrator, PipelineState } from "@/lib/pipeline/orchestrator";
 import { PipelineTimeline } from "@/components/PipelineTimeline";
+import { ProviderToggle, ProviderConfig } from "@/components/ProviderToggle";
 
 const EXAMPLE_CONCEPTS = [
   { title: "Projectile Motion with Drag", slug: "particles-exemplar", prompt: "projectile motion with air drag and crosswind" },
@@ -22,6 +23,11 @@ export default function Home() {
   const [level, setLevel] = useState<"beginner" | "intermediate" | "advanced">("intermediate");
   const [pipelineState, setPipelineState] = useState<PipelineState | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [providerConfig, setProviderConfig] = useState<ProviderConfig>({
+    provider: "cloud",
+    endpoint: "http://localhost:1234",
+    model: "google/gemma-4-12b-qat",
+  });
   const orchestratorRef = useRef<PipelineOrchestrator | null>(null);
 
   useEffect(() => {
@@ -37,7 +43,11 @@ export default function Home() {
 
     setIsGenerating(true);
     try {
-      const redirectUrl = await orchestratorRef.current.run(concept.trim(), level);
+      const redirectUrl = await orchestratorRef.current.run(concept.trim(), level, {
+        provider: providerConfig.provider,
+        endpoint: providerConfig.endpoint,
+        model: providerConfig.model,
+      });
       if (redirectUrl) {
         setTimeout(() => router.push(redirectUrl), 1000);
       }
@@ -100,9 +110,16 @@ export default function Home() {
             interactive simulation
           </span>
         </h1>
-        <p className="text-lg sm:text-xl text-paper-800 dark:text-paper-200 max-w-2xl mb-10">
+        <p className="text-lg sm:text-xl text-paper-800 dark:text-paper-200 max-w-2xl mb-8">
           PlayTheory designs, codes, sandboxes, and verifies live simulations on the fly. Move sliders, observe phase spaces, and test your mental models.
         </p>
+
+        {/* Model Switch (Cloud Gemini <-> Local LM Studio Gemma) */}
+        <ProviderToggle
+          config={providerConfig}
+          onChange={setProviderConfig}
+          disabled={isGenerating}
+        />
 
         {/* Prompt Input Form */}
         <form

@@ -35,9 +35,18 @@ export function PipelineTimeline({ state }: PipelineTimelineProps) {
     <div className="w-full max-w-3xl bg-white dark:bg-paper-900 border-2 border-paper-900 dark:border-paper-300 rounded-xl p-6 shadow-[4px_4px_0px_0px_rgba(24,23,21,1)] dark:shadow-[4px_4px_0px_0px_rgba(250,247,238,1)] text-left mb-8">
       <div className="flex items-center justify-between pb-4 mb-6 border-b border-paper-200 dark:border-paper-700">
         <div>
-          <h2 className="font-bold text-base font-mono uppercase tracking-wider flex items-center gap-2">
+          <h2 className="font-bold text-base font-mono uppercase tracking-wider flex flex-wrap items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-arcade-amber animate-ping" />
             Compound AI Pipeline Timeline
+            {state.provider === "local" ? (
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-arcade-crimson/20 text-arcade-crimson border border-arcade-crimson/40">
+                🖥️ Local Gemma 4 12B
+              </span>
+            ) : (
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-arcade-cyan/20 text-arcade-cyan border border-arcade-cyan/40">
+                ☁️ Cloud Gemini
+              </span>
+            )}
           </h2>
           <p className="text-xs text-paper-500 font-mono mt-0.5">
             Watch the planner, builder, client verifier, and repair loop run in real time.
