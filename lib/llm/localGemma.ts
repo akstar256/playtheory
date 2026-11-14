@@ -90,7 +90,6 @@ export async function planWithLocalLM(
         { role: "user", content: prompt },
       ],
       temperature: 0.2,
-      response_format: { type: "json_object" },
     }),
   });
 
@@ -107,6 +106,12 @@ export async function planWithLocalLM(
     cleaned = cleaned.replace(/^```json\s*/, "").replace(/\s*```$/, "");
   } else if (cleaned.startsWith("```")) {
     cleaned = cleaned.replace(/^```\s*/, "").replace(/\s*```$/, "");
+  }
+
+  const firstBrace = cleaned.indexOf("{");
+  const lastBrace = cleaned.lastIndexOf("}");
+  if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+    cleaned = cleaned.substring(firstBrace, lastBrace + 1);
   }
 
   const parsed = JSON.parse(cleaned);
