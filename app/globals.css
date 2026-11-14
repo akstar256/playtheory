@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #FAF7EE;
+  --foreground: #181715;
+  --card-bg: #FFFFFF;
+  --card-border: #EADECA;
+  --accent: #FF3366;
+  --accent-cyan: #00B8D4;
+}
+
+.dark {
+  --background: #121110;
+  --foreground: #FAF7EE;
+  --card-bg: #1B1A18;
+  --card-border: #2B2824;
+  --accent: #FF3366;
+  --accent-cyan: #00E5FF;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  min-height: 100vh;
+}
+
+/* Lab notebook grid line accent */
+.notebook-grid {
+  background-image: 
+    linear-gradient(to right, rgba(214, 198, 165, 0.2) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(214, 198, 165, 0.2) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
