@@ -42,7 +42,7 @@ export default function AboutPage() {
         <div className="space-y-4">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-paper-300 dark:border-paper-700 bg-paper-100 dark:bg-paper-800 text-xs font-mono">
             <Sparkles className="w-3.5 h-3.5 text-arcade-amber" />
-            <span>IceHacks 2026 Submission</span>
+            <span>Interactive Science & Computation Engine</span>
           </div>
           <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-paper-950 dark:text-paper-50">
             Why PlayTheory?
@@ -135,15 +135,15 @@ export default function AboutPage() {
           </div>
         </div>
 
-        {/* Hackathon Submission Credentials */}
+        {/* Core System Strengths */}
         <div className="space-y-3">
           <h2 className="font-bold font-mono text-xs uppercase tracking-wider text-paper-500">
-            IceHacks 2026 Target Categories
+            Core System Strengths
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="p-4 rounded-lg border border-paper-300 dark:border-paper-700 bg-paper-100/60 dark:bg-paper-800/60">
               <span className="text-xs font-bold text-arcade-crimson block mb-1">
-                🏆 Best Deployed / Shipped App
+                ⚡ Fully Deployed Production System
               </span>
               <p className="text-xs text-paper-600 dark:text-paper-400">
                 Fully functional, live production deployment on Vercel backed by serverless Upstash Redis cache, automated CI/CD, and live health monitoring.
@@ -151,7 +151,7 @@ export default function AboutPage() {
             </div>
             <div className="p-4 rounded-lg border border-paper-300 dark:border-paper-700 bg-paper-100/60 dark:bg-paper-800/60">
               <span className="text-xs font-bold text-arcade-cyan block mb-1">
-                🧠 Best AI Hack
+                🧠 Autonomous Compound AI Pipeline
               </span>
               <p className="text-xs text-paper-600 dark:text-paper-400">
                 Autonomous multi-stage compound AI pipeline with automated code generation, AST instrumentation, 12-point client-side verification, and self-repair.
@@ -163,7 +163,7 @@ export default function AboutPage() {
 
       {/* Footer */}
       <footer className="border-t border-paper-200 dark:border-paper-800 py-6 text-center text-xs font-mono text-paper-500">
-        PlayTheory • IceHacks 2026 Hackathon • Built with Next.js, Google Gemini & Upstash Redis
+        PlayTheory • Built with Next.js, Google Gemini & Upstash Redis
       </footer>
     </div>
   );

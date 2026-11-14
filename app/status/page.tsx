@@ -189,7 +189,7 @@ export default async function StatusPage() {
 
       {/* Footer */}
       <footer className="border-t border-paper-200 dark:border-paper-800 py-6 text-center text-xs font-mono text-paper-500">
-        PlayTheory Status Dashboard • Measured for IceHacks 2026
+        PlayTheory • Live Status & Telemetry Dashboard
       </footer>
     </div>
   );

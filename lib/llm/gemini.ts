@@ -1,6 +1,12 @@
 import { z } from "zod";
 import { LLMAdapter, LLMResult, GenerateJSONOptions, StreamOptions, TokenUsage } from "./types";
 
+const FALLBACK_MODELS = [
+  "gemini-3.5-flash-lite",
+  "gemini-3.5-flash",
+  "gemini-3.1-flash-lite",
+];
+
 export class GeminiAdapter implements LLMAdapter {
   private apiKey: string;
   private defaultPlanModel: string;
@@ -8,8 +14,8 @@ export class GeminiAdapter implements LLMAdapter {
 
   constructor(apiKey?: string) {
     this.apiKey = apiKey || process.env.LLM_API_KEY || "";
-    this.defaultPlanModel = process.env.LLM_MODEL_PLAN || "gemini-2.5-pro";
-    this.defaultBuildModel = process.env.LLM_MODEL_BUILD || "gemini-2.5-flash";
+    this.defaultPlanModel = process.env.LLM_MODEL_PLAN || "gemini-3.5-flash-lite";
+    this.defaultBuildModel = process.env.LLM_MODEL_BUILD || "gemini-3.5-flash-lite";
   }
 
   private calculateCost(model: string, promptTokens: number, completionTokens: number): number {
@@ -60,15 +66,14 @@ export class GeminiAdapter implements LLMAdapter {
 
   async generateJSON<T extends z.ZodTypeAny>(opts: GenerateJSONOptions<T>): Promise<LLMResult<z.infer<T>>> {
     const startTime = Date.now();
-    const model = opts.model || this.defaultPlanModel;
+    const requestedModel = opts.model || this.defaultPlanModel;
+    const candidates = Array.from(new Set([requestedModel, ...FALLBACK_MODELS]));
 
     if (!this.apiKey) {
       throw new Error("Missing LLM_API_KEY for GeminiAdapter");
     }
 
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${this.apiKey}`;
-
-    const body: any = {
+    const bodyTemplate: any = {
       contents: [
         {
           role: "user",
@@ -82,76 +87,84 @@ export class GeminiAdapter implements LLMAdapter {
     };
 
     if (opts.systemPrompt) {
-      body.systemInstruction = {
+      bodyTemplate.systemInstruction = {
         parts: [{ text: opts.systemPrompt }],
       };
     }
 
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), opts.timeoutMs || 45000);
+    let lastError: Error | null = null;
 
-    let res: Response;
-    try {
-      res = await this.fetchWithRetry(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-        signal: controller.signal,
-      });
-    } finally {
-      clearTimeout(timeout);
+    for (const model of candidates) {
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${this.apiKey}`;
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), opts.timeoutMs || 45000);
+
+      try {
+        const res = await this.fetchWithRetry(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(bodyTemplate),
+          signal: controller.signal,
+        });
+
+        if (!res.ok) {
+          const errText = await res.text();
+          throw new Error(`Gemini API error [${res.status}]: ${errText}`);
+        }
+
+        const jsonRes = await res.json();
+        const rawText = jsonRes.candidates?.[0]?.content?.parts?.[0]?.text || "";
+        const cleanedText = this.cleanJsonString(rawText);
+
+        let parsedData: unknown;
+        try {
+          parsedData = JSON.parse(cleanedText);
+        } catch (parseErr: any) {
+          throw new Error(`Failed to parse Gemini JSON output: ${parseErr.message}\nRaw: ${rawText.slice(0, 500)}`);
+        }
+
+        const validated = opts.schema.parse(parsedData);
+
+        const usageMeta = jsonRes.usageMetadata || {};
+        const promptTokens = usageMeta.promptTokenCount || 0;
+        const completionTokens = usageMeta.candidatesTokenCount || 0;
+        const totalTokens = usageMeta.totalTokenCount || promptTokens + completionTokens;
+
+        const usage: TokenUsage = {
+          promptTokens,
+          completionTokens,
+          totalTokens,
+          estimatedCostUsd: this.calculateCost(model, promptTokens, completionTokens),
+        };
+
+        return {
+          data: validated,
+          rawText,
+          usage,
+          model,
+          durationMs: Date.now() - startTime,
+        };
+      } catch (err: any) {
+        lastError = err;
+        console.warn(`[GeminiAdapter] Model ${model} failed for generateJSON: ${err.message}. Trying next candidate...`);
+      } finally {
+        clearTimeout(timeout);
+      }
     }
 
-    if (!res.ok) {
-      const errText = await res.text();
-      throw new Error(`Gemini API error [${res.status}]: ${errText}`);
-    }
-
-    const jsonRes = await res.json();
-    const rawText = jsonRes.candidates?.[0]?.content?.parts?.[0]?.text || "";
-    const cleanedText = this.cleanJsonString(rawText);
-
-    let parsedData: unknown;
-    try {
-      parsedData = JSON.parse(cleanedText);
-    } catch (parseErr: any) {
-      throw new Error(`Failed to parse Gemini JSON output: ${parseErr.message}\nRaw: ${rawText.slice(0, 500)}`);
-    }
-
-    const validated = opts.schema.parse(parsedData);
-
-    const usageMeta = jsonRes.usageMetadata || {};
-    const promptTokens = usageMeta.promptTokenCount || 0;
-    const completionTokens = usageMeta.candidatesTokenCount || 0;
-    const totalTokens = usageMeta.totalTokenCount || promptTokens + completionTokens;
-
-    const usage: TokenUsage = {
-      promptTokens,
-      completionTokens,
-      totalTokens,
-      estimatedCostUsd: this.calculateCost(model, promptTokens, completionTokens),
-    };
-
-    return {
-      data: validated,
-      rawText,
-      usage,
-      model,
-      durationMs: Date.now() - startTime,
-    };
+    throw lastError || new Error("All candidate models failed for generateJSON");
   }
 
   async stream(opts: StreamOptions): Promise<LLMResult<string>> {
     const startTime = Date.now();
-    const model = opts.model || this.defaultBuildModel;
+    const requestedModel = opts.model || this.defaultBuildModel;
+    const candidates = Array.from(new Set([requestedModel, ...FALLBACK_MODELS]));
 
     if (!this.apiKey) {
       throw new Error("Missing LLM_API_KEY for GeminiAdapter");
     }
 
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${this.apiKey}`;
-
-    const body: any = {
+    const bodyTemplate: any = {
       contents: [
         {
           role: "user",
@@ -164,87 +177,96 @@ export class GeminiAdapter implements LLMAdapter {
     };
 
     if (opts.systemPrompt) {
-      body.systemInstruction = {
+      bodyTemplate.systemInstruction = {
         parts: [{ text: opts.systemPrompt }],
       };
     }
 
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), opts.timeoutMs || 60000);
+    let lastError: Error | null = null;
 
-    let res: Response;
-    try {
-      res = await this.fetchWithRetry(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-        signal: controller.signal,
-      });
-    } finally {
-      clearTimeout(timeout);
-    }
+    for (const model of candidates) {
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${this.apiKey}`;
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), opts.timeoutMs || 90000);
 
-    if (!res.ok) {
-      const errText = await res.text();
-      throw new Error(`Gemini Stream API error [${res.status}]: ${errText}`);
-    }
+      try {
+        const res = await this.fetchWithRetry(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(bodyTemplate),
+          signal: controller.signal,
+        });
 
-    const reader = res.body?.getReader();
-    if (!reader) {
-      throw new Error("Gemini stream body reader unavailable");
-    }
+        if (!res.ok) {
+          const errText = await res.text();
+          throw new Error(`Gemini Stream API error [${res.status}]: ${errText}`);
+        }
 
-    const decoder = new TextDecoder();
-    let accumulatedText = "";
-    let promptTokens = 0;
-    let completionTokens = 0;
+        const reader = res.body?.getReader();
+        if (!reader) {
+          throw new Error("Gemini stream body reader unavailable");
+        }
 
-    let buffer = "";
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
+        const decoder = new TextDecoder();
+        let accumulatedText = "";
+        let promptTokens = 0;
+        let completionTokens = 0;
 
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split("\n");
-      buffer = lines.pop() || "";
+        let buffer = "";
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
 
-      for (const line of lines) {
-        if (line.startsWith("data: ")) {
-          const jsonStr = line.slice(6).trim();
-          if (jsonStr === "[DONE]") continue;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() || "";
 
-          try {
-            const parsed = JSON.parse(jsonStr);
-            const chunk = parsed.candidates?.[0]?.content?.parts?.[0]?.text;
-            if (chunk) {
-              accumulatedText += chunk;
-              await opts.onChunk(chunk);
+          for (const line of lines) {
+            if (line.startsWith("data: ")) {
+              const jsonStr = line.slice(6).trim();
+              if (jsonStr === "[DONE]") continue;
+
+              try {
+                const parsed = JSON.parse(jsonStr);
+                const chunk = parsed.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (chunk) {
+                  accumulatedText += chunk;
+                  await opts.onChunk(chunk);
+                }
+                if (parsed.usageMetadata) {
+                  promptTokens = parsed.usageMetadata.promptTokenCount || promptTokens;
+                  completionTokens = parsed.usageMetadata.candidatesTokenCount || completionTokens;
+                }
+              } catch {
+                // Ignore incomplete SSE json chunks
+              }
             }
-            if (parsed.usageMetadata) {
-              promptTokens = parsed.usageMetadata.promptTokenCount || promptTokens;
-              completionTokens = parsed.usageMetadata.candidatesTokenCount || completionTokens;
-            }
-          } catch {
-            // Ignore incomplete SSE json chunks
           }
         }
+
+        const totalTokens = promptTokens + completionTokens;
+        const usage: TokenUsage = {
+          promptTokens,
+          completionTokens,
+          totalTokens,
+          estimatedCostUsd: this.calculateCost(model, promptTokens, completionTokens),
+        };
+
+        return {
+          data: accumulatedText,
+          rawText: accumulatedText,
+          usage,
+          model,
+          durationMs: Date.now() - startTime,
+        };
+      } catch (err: any) {
+        lastError = err;
+        console.warn(`[GeminiAdapter] Stream model ${model} failed: ${err.message}. Trying next candidate...`);
+      } finally {
+        clearTimeout(timeout);
       }
     }
 
-    const totalTokens = promptTokens + completionTokens;
-    const usage: TokenUsage = {
-      promptTokens,
-      completionTokens,
-      totalTokens,
-      estimatedCostUsd: this.calculateCost(model, promptTokens, completionTokens),
-    };
-
-    return {
-      data: accumulatedText,
-      rawText: accumulatedText,
-      usage,
-      model,
-      durationMs: Date.now() - startTime,
-    };
+    throw lastError || new Error("All candidate models failed for stream");
   }
 }

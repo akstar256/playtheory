@@ -93,7 +93,7 @@ export default function Home() {
         {/* Status Pill */}
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-paper-300 dark:border-paper-700 bg-paper-100 dark:bg-paper-800 text-xs font-mono mb-8">
           <span className="w-2 h-2 rounded-full bg-arcade-emerald animate-pulse" />
-          <span>IceHacks 2026 • 12-Point Automated Verifier & Repair Loop</span>
+          <span>Autonomous 12-Point Automated Verifier & Repair Loop</span>
         </div>
 
         {/* Hero Headline */}
@@ -268,7 +268,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="border-t border-paper-200 dark:border-paper-800 py-6 text-center text-xs font-mono text-paper-500">
-        PlayTheory • IceHacks 2026 Hackathon • Built with Next.js, Google Gemini & Upstash
+        PlayTheory • Autonomous Physics & Computational Simulation Engine • Built with Next.js, Google Gemini & Upstash
       </footer>
     </div>
   );
