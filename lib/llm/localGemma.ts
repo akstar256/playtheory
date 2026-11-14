@@ -6,6 +6,7 @@ import { computeCodeHash } from "@/lib/pipeline/utils";
 export interface LocalLMConfig {
   endpoint: string; // e.g. "http://localhost:1234" or "http://192.168.0.8:1234"
   model: string;    // e.g. "google/gemma-4-12b-qat"
+  signal?: AbortSignal;
 }
 
 export const DEFAULT_LOCAL_LM_CONFIG: LocalLMConfig = {
@@ -83,6 +84,7 @@ export async function planWithLocalLM(
   const res = await fetch(`${endpoint}/v1/chat/completions`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+    signal: config.signal,
     body: JSON.stringify({
       model,
       messages: [
@@ -133,6 +135,7 @@ export async function buildWithLocalLM(
   const res = await fetch(`${endpoint}/v1/chat/completions`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+    signal: config.signal,
     body: JSON.stringify({
       model,
       messages: [
@@ -215,6 +218,7 @@ export async function repairWithLocalLM(
   const res = await fetch(`${endpoint}/v1/chat/completions`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+    signal: config.signal,
     body: JSON.stringify({
       model,
       messages: [

@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Sparkles, Terminal, Activity, Loader2, ArrowRight } from "lucide-react";
+import { Terminal, Loader2, ArrowRight, Square } from "lucide-react";
 import { PipelineOrchestrator, PipelineState } from "@/lib/pipeline/orchestrator";
 import { PipelineTimeline } from "@/components/PipelineTimeline";
 import { ProviderToggle, ProviderConfig } from "@/components/ProviderToggle";
@@ -50,10 +50,19 @@ export default function Home() {
       });
       if (redirectUrl) {
         setTimeout(() => router.push(redirectUrl), 1000);
+      } else {
+        setIsGenerating(false);
       }
     } catch {
       setIsGenerating(false);
     }
+  };
+
+  const handleStop = () => {
+    if (orchestratorRef.current) {
+      orchestratorRef.current.cancel();
+    }
+    setIsGenerating(false);
   };
 
   const selectExample = (ex: (typeof EXAMPLE_CONCEPTS)[0]) => {
@@ -81,8 +90,7 @@ export default function Home() {
               href="/status"
               className="flex items-center gap-1.5 text-xs font-mono bg-paper-100 hover:bg-paper-200 dark:bg-paper-800 dark:hover:bg-paper-700 px-2.5 py-1 rounded border border-paper-300 dark:border-paper-700 transition"
             >
-              <Activity className="w-3.5 h-3.5 text-arcade-emerald" />
-              Status & Telemetry
+              Status &amp; Telemetry
             </Link>
             <Link
               href="/api/health"
@@ -124,7 +132,7 @@ export default function Home() {
         {/* Prompt Input Form */}
         <form
           onSubmit={handleGenerate}
-          className="w-full max-w-2xl bg-white dark:bg-paper-900 border-2 border-paper-900 dark:border-paper-300 rounded-xl p-3 shadow-[4px_4px_0px_0px_rgba(24,23,21,1)] dark:shadow-[4px_4px_0px_0px_rgba(250,247,238,1)] transition mb-6 text-left"
+          className="w-full max-w-2xl bg-white dark:bg-paper-900 border-2 border-paper-900 dark:border-paper-300 rounded-xl p-3 shadow-[4px_4px_0px_0px_rgba(24,23,21,1)] dark:shadow-[4px_4px_0px_0px_rgba(250,247,238,1)] transition-all duration-200 ease-out hover:scale-[1.015] hover:shadow-[6px_6px_0px_0px_rgba(24,23,21,1)] dark:hover:shadow-[6px_6px_0px_0px_rgba(250,247,238,1)] mb-6 text-left"
         >
           <div className="flex flex-col sm:flex-row gap-2">
             <div className="flex-1 flex items-center px-3 py-2">
@@ -138,23 +146,25 @@ export default function Home() {
                 className="w-full bg-transparent outline-none text-paper-900 dark:text-paper-50 placeholder:text-paper-400 text-base"
               />
             </div>
-            <button
-              type="submit"
-              disabled={isGenerating || !concept.trim()}
-              className="bg-paper-900 text-paper-50 dark:bg-paper-50 dark:text-paper-950 font-bold px-6 py-3 rounded-lg flex items-center justify-center gap-2 hover:bg-arcade-crimson hover:text-white dark:hover:bg-arcade-crimson dark:hover:text-white transition disabled:opacity-50 disabled:cursor-not-allowed text-sm uppercase tracking-wide shrink-0"
-            >
-              {isGenerating ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin text-arcade-amber" />
-                  Running...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-4 h-4 text-arcade-amber" />
-                  Build
-                </>
-              )}
-            </button>
+            {isGenerating ? (
+              <button
+                type="button"
+                onClick={handleStop}
+                className="bg-arcade-crimson text-white font-bold px-6 py-3 rounded-lg flex items-center justify-center gap-2 hover:opacity-90 transition-all duration-150 hover:scale-105 active:scale-95 text-sm uppercase tracking-wide shrink-0 shadow-sm cursor-pointer"
+                title="Cancel current generation"
+              >
+                <Square className="w-4 h-4 fill-current" />
+                Stop
+              </button>
+            ) : (
+              <button
+                type="submit"
+                disabled={!concept.trim()}
+                className="bg-paper-900 text-paper-50 dark:bg-paper-50 dark:text-paper-950 font-bold px-6 py-3 rounded-lg flex items-center justify-center gap-2 hover:bg-arcade-crimson hover:text-white dark:hover:bg-arcade-crimson dark:hover:text-white transition-all duration-150 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed text-sm uppercase tracking-wide shrink-0 cursor-pointer"
+              >
+                Build
+              </button>
+            )}
           </div>
 
           {/* Level Selector */}
@@ -194,7 +204,7 @@ export default function Home() {
               key={ex.title}
               onClick={() => selectExample(ex)}
               disabled={isGenerating}
-              className="text-xs font-mono bg-paper-100 hover:bg-paper-200 dark:bg-paper-800 dark:hover:bg-paper-700 border border-paper-300 dark:border-paper-700 px-2.5 py-1 rounded text-paper-800 dark:text-paper-200 cursor-pointer hover:border-arcade-crimson transition flex items-center gap-1"
+              className="text-xs font-mono bg-paper-100 hover:bg-paper-200 dark:bg-paper-800 dark:hover:bg-paper-700 border border-paper-300 dark:border-paper-700 px-2.5 py-1 rounded text-paper-800 dark:text-paper-200 cursor-pointer transition-all duration-150 ease-out hover:scale-105 active:scale-95 hover:shadow-sm flex items-center gap-1"
             >
               <span>{ex.title}</span>
               {ex.slug && <ArrowRight className="w-3 h-3 text-arcade-amber" />}
@@ -214,7 +224,7 @@ export default function Home() {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             <Link
               href="/s/particles-exemplar"
-              className="p-4 rounded-xl border border-paper-300 dark:border-paper-700 bg-white dark:bg-paper-900 hover:border-arcade-crimson transition shadow-sm hover:shadow"
+              className="p-4 rounded-xl border border-paper-300 dark:border-paper-700 bg-white dark:bg-paper-900 transition-all duration-200 ease-out hover:scale-105 hover:shadow-lg hover:-translate-y-1 shadow-sm"
             >
               <span className="text-[10px] font-mono uppercase bg-paper-200 dark:bg-paper-800 px-1.5 py-0.5 rounded">
                 particles
@@ -227,7 +237,7 @@ export default function Home() {
 
             <Link
               href="/s/ode_phase-exemplar"
-              className="p-4 rounded-xl border border-paper-300 dark:border-paper-700 bg-white dark:bg-paper-900 hover:border-arcade-crimson transition shadow-sm hover:shadow"
+              className="p-4 rounded-xl border border-paper-300 dark:border-paper-700 bg-white dark:bg-paper-900 transition-all duration-200 ease-out hover:scale-105 hover:shadow-lg hover:-translate-y-1 shadow-sm"
             >
               <span className="text-[10px] font-mono uppercase bg-paper-200 dark:bg-paper-800 px-1.5 py-0.5 rounded">
                 ode_phase
@@ -240,7 +250,7 @@ export default function Home() {
 
             <Link
               href="/s/agents-exemplar"
-              className="p-4 rounded-xl border border-paper-300 dark:border-paper-700 bg-white dark:bg-paper-900 hover:border-arcade-crimson transition shadow-sm hover:shadow"
+              className="p-4 rounded-xl border border-paper-300 dark:border-paper-700 bg-white dark:bg-paper-900 transition-all duration-200 ease-out hover:scale-105 hover:shadow-lg hover:-translate-y-1 shadow-sm"
             >
               <span className="text-[10px] font-mono uppercase bg-paper-200 dark:bg-paper-800 px-1.5 py-0.5 rounded">
                 agents
@@ -253,7 +263,7 @@ export default function Home() {
 
             <Link
               href="/s/cellular_automaton-exemplar"
-              className="p-4 rounded-xl border border-paper-300 dark:border-paper-700 bg-white dark:bg-paper-900 hover:border-arcade-crimson transition shadow-sm hover:shadow"
+              className="p-4 rounded-xl border border-paper-300 dark:border-paper-700 bg-white dark:bg-paper-900 transition-all duration-200 ease-out hover:scale-105 hover:shadow-lg hover:-translate-y-1 shadow-sm"
             >
               <span className="text-[10px] font-mono uppercase bg-paper-200 dark:bg-paper-800 px-1.5 py-0.5 rounded">
                 cellular_automaton
@@ -266,7 +276,7 @@ export default function Home() {
 
             <Link
               href="/s/queue_flow-exemplar"
-              className="p-4 rounded-xl border border-paper-300 dark:border-paper-700 bg-white dark:bg-paper-900 hover:border-arcade-crimson transition shadow-sm hover:shadow"
+              className="p-4 rounded-xl border border-paper-300 dark:border-paper-700 bg-white dark:bg-paper-900 transition-all duration-200 ease-out hover:scale-105 hover:shadow-lg hover:-translate-y-1 shadow-sm"
             >
               <span className="text-[10px] font-mono uppercase bg-paper-200 dark:bg-paper-800 px-1.5 py-0.5 rounded">
                 queue_flow

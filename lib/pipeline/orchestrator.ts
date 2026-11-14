@@ -45,6 +45,7 @@ export type PipelineListener = (state: PipelineState) => void;
 export class PipelineOrchestrator {
   private state: PipelineState;
   private listeners: Set<PipelineListener> = new Set();
+  private abortController: AbortController | null = null;
 
   constructor() {
     this.state = {
@@ -61,6 +62,17 @@ export class PipelineOrchestrator {
       jobToken: null,
       error: null,
     };
+  }
+
+  cancel(): void {
+    if (this.abortController) {
+      this.abortController.abort();
+      this.abortController = null;
+    }
+    this.update({
+      stage: "idle",
+      error: "Generation stopped by user.",
+    });
   }
 
   getState(): PipelineState {
@@ -86,6 +98,9 @@ export class PipelineOrchestrator {
   ): Promise<string> {
     const isLocal = options?.provider === "local";
 
+    this.abortController = new AbortController();
+    const signal = this.abortController.signal;
+
     this.update({
       stage: "planning",
       concept,
@@ -109,6 +124,7 @@ export class PipelineOrchestrator {
         spec = await planWithLocalLM(concept, level, {
           endpoint: options?.endpoint || DEFAULT_LOCAL_LM_CONFIG.endpoint,
           model: options?.model || DEFAULT_LOCAL_LM_CONFIG.model,
+          signal,
         });
         this.update({ spec, stage: "building" });
       } else {
@@ -116,6 +132,7 @@ export class PipelineOrchestrator {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ concept, level }),
+          signal,
         });
 
         const planData = await planRes.json();
@@ -151,6 +168,7 @@ export class PipelineOrchestrator {
           {
             endpoint: options?.endpoint || DEFAULT_LOCAL_LM_CONFIG.endpoint,
             model: options?.model || DEFAULT_LOCAL_LM_CONFIG.model,
+            signal,
           }
         );
         currentCode = buildResult.code;
@@ -161,6 +179,7 @@ export class PipelineOrchestrator {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ spec }),
+          signal,
         });
 
         if (!buildRes.ok) {
@@ -306,6 +325,13 @@ export class PipelineOrchestrator {
       this.update({ slug: saveData.slug });
       return saveData.url;
     } catch (err: any) {
+      if (err.name === "AbortError" || this.state.error === "Generation stopped by user.") {
+        this.update({
+          stage: "idle",
+          error: "Generation stopped by user.",
+        });
+        return "";
+      }
       this.update({
         stage: "fallback",
         error: err.message || "An unexpected error occurred in the generation pipeline.",

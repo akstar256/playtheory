@@ -8,12 +8,14 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   const store = getStore();
 
+  const pingStart = performance.now();
   let isHealthy = false;
   try {
     isHealthy = await store.isHealthy();
   } catch {
     isHealthy = false;
   }
+  const storePingMs = Math.round((performance.now() - pingStart) * 10) / 10;
 
   const galleryItems = await store.listGallery(100);
   const totalSims = Math.max(galleryItems.length, Object.keys(ARCHETYPE_EXEMPLARS).length);
@@ -47,6 +49,7 @@ export async function GET() {
   return NextResponse.json({
     status: isHealthy ? "operational" : "degraded",
     uptime: "99.98%",
+    storePingMs,
     totalSimulations: totalSims,
     firstPassSuccessRate: Number(firstPassRate.toFixed(1)),
     totalSuccessRate,

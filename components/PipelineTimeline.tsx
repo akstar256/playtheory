@@ -39,12 +39,12 @@ export function PipelineTimeline({ state }: PipelineTimelineProps) {
             <span className="w-2.5 h-2.5 rounded-full bg-arcade-amber animate-ping" />
             Compound AI Pipeline Timeline
             {state.provider === "local" ? (
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-arcade-crimson/20 text-arcade-crimson border border-arcade-crimson/40">
-                🖥️ Local Gemma 4 12B
+              <span className="text-[10px] px-2 py-0.5 rounded-md bg-arcade-crimson/15 text-arcade-crimson border border-arcade-crimson/40 font-mono font-bold">
+                Local Gemma 4 12B
               </span>
             ) : (
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-arcade-cyan/20 text-arcade-cyan border border-arcade-cyan/40">
-                ☁️ Cloud Gemini
+              <span className="text-[10px] px-2 py-0.5 rounded-md bg-arcade-cyan/15 text-arcade-cyan border border-arcade-cyan/40 font-mono font-bold">
+                Cloud Gemini
               </span>
             )}
           </h2>

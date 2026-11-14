@@ -71,7 +71,7 @@ export function ProviderToggle({ config, onChange, disabled }: ProviderTogglePro
 
   return (
     <div className="flex flex-col items-center gap-2 mb-4">
-      <div className="inline-flex items-center gap-1.5 p-1 rounded-xl bg-paper-200/80 dark:bg-paper-800/80 border border-paper-300 dark:border-paper-700 text-xs font-mono">
+      <div className="inline-flex items-center gap-1.5 p-1 rounded-xl bg-paper-200/80 dark:bg-paper-800/80 border border-paper-300 dark:border-paper-700 text-xs font-mono transition-all duration-200 hover:scale-[1.02] shadow-sm">
         {/* Cloud Option */}
         <button
           type="button"

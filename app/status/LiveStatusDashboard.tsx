@@ -5,10 +5,7 @@ import Link from "next/link";
 import {
   ArrowLeft,
   CheckCircle2,
-  ShieldCheck,
   Cpu,
-  Database,
-  Zap,
   RefreshCw,
   AlertTriangle,
 } from "lucide-react";
@@ -16,6 +13,7 @@ import {
 export interface StatusData {
   status: string;
   uptime: string;
+  storePingMs?: number;
   totalSimulations: number;
   firstPassSuccessRate: number;
   totalSuccessRate: number;
@@ -138,10 +136,10 @@ export function LiveStatusDashboard({
               <span className="hidden sm:inline">Refresh</span>
             </button>
 
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-arcade-emerald animate-pulse" />
-              <span className="text-xs font-mono font-bold text-arcade-emerald uppercase">
-                {isStoreHealthy ? "All Systems Operational" : "Degraded (Memory Mode)"}
+            <div className="flex items-center gap-2 px-2.5 py-1 rounded-md border border-arcade-emerald/30 bg-arcade-emerald/10 text-arcade-emerald font-mono text-xs font-bold shadow-sm">
+              <span className="w-2 h-2 rounded-sm bg-arcade-emerald animate-pulse" />
+              <span>
+                {isStoreHealthy ? "ALL SYSTEMS OPERATIONAL" : "DEGRADED (MEMORY MODE)"}
               </span>
             </div>
           </div>
@@ -157,8 +155,11 @@ export function LiveStatusDashboard({
               <h1 className="text-2xl font-black tracking-tight text-paper-950 dark:text-paper-50">
                 Live System Telemetry
               </h1>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase bg-arcade-emerald/10 text-arcade-emerald border border-arcade-emerald/30">
-                <span className="w-1.5 h-1.5 rounded-full bg-arcade-emerald animate-ping" />
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-mono font-bold uppercase tracking-wider bg-arcade-emerald/10 text-arcade-emerald border border-arcade-emerald/30 shadow-sm">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-sm bg-arcade-emerald opacity-75"></span>
+                  <span className="relative inline-flex rounded-sm h-2 w-2 bg-arcade-emerald"></span>
+                </span>
                 Live ({secondsAgo}s ago)
               </span>
             </div>
@@ -167,8 +168,12 @@ export function LiveStatusDashboard({
             </p>
           </div>
           <div className="flex flex-col sm:items-end gap-1 shrink-0">
-            <div className="px-3 py-1.5 rounded-full bg-arcade-emerald/20 text-arcade-emerald border border-arcade-emerald/40 font-mono text-xs font-bold">
-              {stats.uptime} Uptime
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-arcade-emerald/10 text-arcade-emerald border border-arcade-emerald/30 font-mono text-xs font-bold shadow-sm">
+              <span className="w-1.5 h-1.5 rounded-sm bg-arcade-emerald" />
+              <span>{stats.uptime} Uptime</span>
+              {stats.storePingMs !== undefined && (
+                <span className="text-[10px] text-paper-500 font-normal">({stats.storePingMs}ms)</span>
+              )}
             </div>
             <span className="text-[10px] font-mono text-paper-400">
               Updated: {lastRefreshedAt.toLocaleTimeString()}
@@ -180,9 +185,8 @@ export function LiveStatusDashboard({
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Card 1: First-Pass Pass Rate */}
           <div className="p-5 rounded-xl border border-paper-300 dark:border-paper-700 bg-white dark:bg-paper-900 shadow-sm space-y-2">
-            <div className="flex items-center justify-between text-xs font-mono text-paper-500">
+            <div className="text-xs font-mono text-paper-500">
               <span>First-Try Pass Rate</span>
-              <ShieldCheck className="w-4 h-4 text-arcade-emerald" />
             </div>
             <p className="text-3xl font-black font-mono text-paper-950 dark:text-paper-50">
               {stats.firstPassSuccessRate.toFixed(1)}%
@@ -194,11 +198,10 @@ export function LiveStatusDashboard({
 
           {/* Card 2: Post-Repair Rate */}
           <div className="p-5 rounded-xl border border-paper-300 dark:border-paper-700 bg-white dark:bg-paper-900 shadow-sm space-y-2">
-            <div className="flex items-center justify-between text-xs font-mono text-paper-500">
+            <div className="text-xs font-mono text-paper-500">
               <span>Post-Repair Success</span>
-              <CheckCircle2 className="w-4 h-4 text-arcade-cyan" />
             </div>
-            <p className="text-3xl font-black font-mono text-arcade-cyan">
+            <p className="text-3xl font-black font-mono text-paper-950 dark:text-paper-50">
               {stats.totalSuccessRate.toFixed(1)}%
             </p>
             <p className="text-[11px] text-paper-500 font-mono">
@@ -208,9 +211,8 @@ export function LiveStatusDashboard({
 
           {/* Card 3: p50 Latency */}
           <div className="p-5 rounded-xl border border-paper-300 dark:border-paper-700 bg-white dark:bg-paper-900 shadow-sm space-y-2">
-            <div className="flex items-center justify-between text-xs font-mono text-paper-500">
+            <div className="text-xs font-mono text-paper-500">
               <span>Verification p50 Latency</span>
-              <Zap className="w-4 h-4 text-arcade-amber" />
             </div>
             <p className="text-3xl font-black font-mono text-paper-950 dark:text-paper-50">
               {stats.latencies.p50Ms.toFixed(1)} ms
@@ -222,9 +224,8 @@ export function LiveStatusDashboard({
 
           {/* Card 4: Verified Simulations */}
           <div className="p-5 rounded-xl border border-paper-300 dark:border-paper-700 bg-white dark:bg-paper-900 shadow-sm space-y-2">
-            <div className="flex items-center justify-between text-xs font-mono text-paper-500">
+            <div className="text-xs font-mono text-paper-500">
               <span>Active Stored Sims</span>
-              <Database className="w-4 h-4 text-arcade-emerald" />
             </div>
             <p className="text-3xl font-black font-mono text-paper-950 dark:text-paper-50">
               {stats.totalSimulations}
@@ -255,22 +256,20 @@ export function LiveStatusDashboard({
                   {stats.backend}
                 </span>
                 <span className="text-paper-500">
-                  Simulation persistence, prompt caching & rate limiting ({stats.totalSimulations} keys)
+                  Simulation persistence, prompt caching & rate limiting ({stats.totalSimulations} keys{stats.storePingMs !== undefined ? ` • ${stats.storePingMs}ms ping` : ""})
                 </span>
               </div>
-              <span className={`font-bold flex items-center gap-1 ${isStoreHealthy ? "text-arcade-emerald" : "text-arcade-amber"}`}>
-                {isStoreHealthy ? (
-                  <>
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    Operational
-                  </>
-                ) : (
-                  <>
-                    <AlertTriangle className="w-3.5 h-3.5" />
-                    Degraded
-                  </>
-                )}
-              </span>
+              {isStoreHealthy ? (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md border border-arcade-emerald/30 bg-arcade-emerald/10 text-arcade-emerald font-mono text-xs font-bold">
+                  <span className="w-1.5 h-1.5 rounded-sm bg-arcade-emerald" />
+                  Operational
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md border border-arcade-amber/30 bg-arcade-amber/10 text-arcade-amber font-mono text-xs font-bold">
+                  <span className="w-1.5 h-1.5 rounded-sm bg-arcade-amber" />
+                  Degraded
+                </span>
+              )}
             </div>
 
             {/* Gemini Planner Model */}
@@ -283,8 +282,8 @@ export function LiveStatusDashboard({
                   Mathematical modeling, SimSpec JSON planning & schema validation
                 </span>
               </div>
-              <span className="text-arcade-emerald font-bold flex items-center gap-1">
-                <CheckCircle2 className="w-3.5 h-3.5" />
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md border border-arcade-emerald/30 bg-arcade-emerald/10 text-arcade-emerald font-mono text-xs font-bold">
+                <span className="w-1.5 h-1.5 rounded-sm bg-arcade-emerald" />
                 {isLlmConfigured ? "Operational" : "Key Missing"}
               </span>
             </div>
@@ -299,8 +298,8 @@ export function LiveStatusDashboard({
                   Constrained JS synthesis, SSE token streaming & self-repair loop
                 </span>
               </div>
-              <span className="text-arcade-emerald font-bold flex items-center gap-1">
-                <CheckCircle2 className="w-3.5 h-3.5" />
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md border border-arcade-emerald/30 bg-arcade-emerald/10 text-arcade-emerald font-mono text-xs font-bold">
+                <span className="w-1.5 h-1.5 rounded-sm bg-arcade-emerald" />
                 {isLlmConfigured ? "Operational" : "Key Missing"}
               </span>
             </div>
@@ -315,8 +314,8 @@ export function LiveStatusDashboard({
                   Automatic failover protection against rate limits (429) and deprecations (404)
                 </span>
               </div>
-              <span className="text-arcade-emerald font-bold flex items-center gap-1">
-                <CheckCircle2 className="w-3.5 h-3.5" />
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md border border-arcade-emerald/30 bg-arcade-emerald/10 text-arcade-emerald font-mono text-xs font-bold">
+                <span className="w-1.5 h-1.5 rounded-sm bg-arcade-emerald" />
                 Active
               </span>
             </div>
@@ -331,8 +330,8 @@ export function LiveStatusDashboard({
                   Acorn AST instrumentation, 600-step headless model run, canvas variance
                 </span>
               </div>
-              <span className="text-arcade-emerald font-bold flex items-center gap-1">
-                <CheckCircle2 className="w-3.5 h-3.5" />
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md border border-arcade-emerald/30 bg-arcade-emerald/10 text-arcade-emerald font-mono text-xs font-bold">
+                <span className="w-1.5 h-1.5 rounded-sm bg-arcade-emerald" />
                 Operational ({stats.checksPassed}/12 Checks)
               </span>
             </div>
