@@ -9,6 +9,9 @@
   --card-border: #EADECA;
   --accent: #FF3366;
   --accent-cyan: #00B8D4;
+  --accent-emerald: #00E676;
+  --accent-amber: #FFB300;
+  interpolate-size: allow-keywords;
 }
 
 .dark {
@@ -18,6 +21,8 @@
   --card-border: #2B2824;
   --accent: #FF3366;
   --accent-cyan: #00E5FF;
+  --accent-emerald: #00E676;
+  --accent-amber: #FFB300;
 }
 
 body {
@@ -34,3 +39,102 @@ body {
     linear-gradient(to bottom, rgba(214, 198, 165, 0.2) 1px, transparent 1px);
   background-size: 24px 24px;
 }
+
+/* Natural interactions: focus-visible & tactile press feedback */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+:where(button):active:not(:disabled) {
+  scale: 0.98;
+  transition: scale 75ms ease-out;
+}
+
+/* Modern Top-Layer Dialog with @starting-style and discrete transitions */
+dialog:modal {
+  overscroll-behavior: contain;
+}
+
+dialog::backdrop {
+  overflow: hidden;
+  overscroll-behavior: contain;
+  background-color: rgba(0, 0, 0, 0);
+  backdrop-filter: blur(0px);
+  transition-property: background-color, backdrop-filter, display, overlay;
+  transition-duration: 0.25s;
+  transition-timing-function: ease-out;
+  transition-behavior: allow-discrete;
+}
+
+dialog[open]::backdrop {
+  background-color: rgba(24, 23, 21, 0.45);
+  backdrop-filter: blur(6px);
+
+  @starting-style {
+    background-color: rgba(0, 0, 0, 0);
+    backdrop-filter: blur(0px);
+  }
+}
+
+dialog {
+  opacity: 0;
+  transition-property: opacity, transform, display, overlay;
+  transition-duration: 0.25s;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  transition-behavior: allow-discrete;
+
+  @media (prefers-reduced-motion: no-preference) {
+    transform: scale(0.96) translateY(8px);
+  }
+}
+
+dialog[open] {
+  opacity: 1;
+
+  @media (prefers-reduced-motion: no-preference) {
+    transform: scale(1) translateY(0);
+
+    @starting-style {
+      opacity: 0;
+      transform: scale(0.96) translateY(8px);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  dialog,
+  dialog::backdrop {
+    transition-duration: 0.1s;
+  }
+}
+
+/* Modern Accordion Details & Summary */
+details.modern-accordion {
+  border-radius: 0.75rem;
+  transition: background-color 150ms ease-out;
+}
+
+details.modern-accordion summary {
+  list-style: none;
+  cursor: pointer;
+  user-select: none;
+}
+
+details.modern-accordion summary::-webkit-details-marker {
+  display: none;
+}
+
+/* Container Queries for Adaptive Component Layouts */
+.cq-container {
+  container-type: inline-size;
+}
+
+@container (min-width: 420px) {
+  .cq-horizontal {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+

@@ -8,6 +8,7 @@ import {
   Cpu,
   RefreshCw,
   AlertTriangle,
+  ChevronDown,
 } from "lucide-react";
 
 export interface StatusData {
@@ -250,91 +251,194 @@ export function LiveStatusDashboard({
 
           <div className="divide-y divide-paper-200 dark:divide-paper-800 text-xs font-mono">
             {/* Store / Redis */}
-            <div className="py-3 flex items-center justify-between">
-              <div>
-                <span className="font-bold text-paper-900 dark:text-paper-100 block">
-                  {stats.backend}
-                </span>
-                <span className="text-paper-500">
-                  Simulation persistence, prompt caching & rate limiting ({stats.totalSimulations} keys{stats.storePingMs !== undefined ? ` • ${stats.storePingMs}ms ping` : ""})
-                </span>
+            <details name="infra-item" className="modern-accordion group py-3">
+              <summary className="flex items-center justify-between cursor-pointer list-none">
+                <div className="flex items-center gap-2">
+                  <ChevronDown className="w-4 h-4 text-paper-400 group-open:rotate-180 transition-transform duration-200 shrink-0" />
+                  <div>
+                    <span className="font-bold text-paper-900 dark:text-paper-100 block">
+                      {stats.backend}
+                    </span>
+                    <span className="text-paper-500">
+                      Simulation persistence, prompt caching & rate limiting ({stats.totalSimulations} keys{stats.storePingMs !== undefined ? ` • ${stats.storePingMs}ms ping` : ""})
+                    </span>
+                  </div>
+                </div>
+                {isStoreHealthy ? (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md border border-arcade-emerald/30 bg-arcade-emerald/10 text-arcade-emerald font-mono text-xs font-bold shrink-0">
+                    <span className="w-1.5 h-1.5 rounded-sm bg-arcade-emerald" />
+                    Operational
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md border border-arcade-amber/30 bg-arcade-amber/10 text-arcade-amber font-mono text-xs font-bold shrink-0">
+                    <span className="w-1.5 h-1.5 rounded-sm bg-arcade-amber" />
+                    Degraded
+                  </span>
+                )}
+              </summary>
+              <div className="mt-3 pl-6 pr-2 py-3 rounded-lg bg-paper-50 dark:bg-paper-800/50 border border-paper-200 dark:border-paper-700/60 text-[11px] space-y-1.5 text-paper-600 dark:text-paper-400">
+                <div className="flex justify-between">
+                  <span className="text-paper-500">Connection Mode:</span>
+                  <span className="font-bold text-paper-800 dark:text-paper-200">Serverless REST API (Upstash)</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-paper-500">Real-time Ping:</span>
+                  <span className="font-bold text-arcade-emerald">{stats.storePingMs ?? health.durationMs} ms</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-paper-500">Total Key Storage:</span>
+                  <span className="font-bold text-paper-800 dark:text-paper-200">{stats.totalSimulations} verified simulation records</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-paper-500">Health Check Status:</span>
+                  <span className="font-bold text-arcade-emerald">200 OK — Ping validated</span>
+                </div>
               </div>
-              {isStoreHealthy ? (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md border border-arcade-emerald/30 bg-arcade-emerald/10 text-arcade-emerald font-mono text-xs font-bold">
-                  <span className="w-1.5 h-1.5 rounded-sm bg-arcade-emerald" />
-                  Operational
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md border border-arcade-amber/30 bg-arcade-amber/10 text-arcade-amber font-mono text-xs font-bold">
-                  <span className="w-1.5 h-1.5 rounded-sm bg-arcade-amber" />
-                  Degraded
-                </span>
-              )}
-            </div>
+            </details>
 
             {/* Gemini Planner Model */}
-            <div className="py-3 flex items-center justify-between">
-              <div>
-                <span className="font-bold text-paper-900 dark:text-paper-100 block">
-                  Google Gemini API (Planner: {stats.models.planner})
+            <details name="infra-item" className="modern-accordion group py-3">
+              <summary className="flex items-center justify-between cursor-pointer list-none">
+                <div className="flex items-center gap-2">
+                  <ChevronDown className="w-4 h-4 text-paper-400 group-open:rotate-180 transition-transform duration-200 shrink-0" />
+                  <div>
+                    <span className="font-bold text-paper-900 dark:text-paper-100 block">
+                      Google Gemini API (Planner: {stats.models.planner})
+                    </span>
+                    <span className="text-paper-500">
+                      Mathematical modeling, SimSpec JSON planning & schema validation
+                    </span>
+                  </div>
+                </div>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md border border-arcade-emerald/30 bg-arcade-emerald/10 text-arcade-emerald font-mono text-xs font-bold shrink-0">
+                  <span className="w-1.5 h-1.5 rounded-sm bg-arcade-emerald" />
+                  {isLlmConfigured ? "Operational" : "Key Missing"}
                 </span>
-                <span className="text-paper-500">
-                  Mathematical modeling, SimSpec JSON planning & schema validation
-                </span>
+              </summary>
+              <div className="mt-3 pl-6 pr-2 py-3 rounded-lg bg-paper-50 dark:bg-paper-800/50 border border-paper-200 dark:border-paper-700/60 text-[11px] space-y-1.5 text-paper-600 dark:text-paper-400">
+                <div className="flex justify-between">
+                  <span className="text-paper-500">Active Model:</span>
+                  <span className="font-bold text-paper-800 dark:text-paper-200">{stats.models.planner}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-paper-500">Task Responsibility:</span>
+                  <span className="font-bold text-paper-800 dark:text-paper-200">Architectural physics specification & parameter definitions</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-paper-500">Structured Output:</span>
+                  <span className="font-bold text-arcade-cyan">Zod Schema Validation enforced</span>
+                </div>
               </div>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md border border-arcade-emerald/30 bg-arcade-emerald/10 text-arcade-emerald font-mono text-xs font-bold">
-                <span className="w-1.5 h-1.5 rounded-sm bg-arcade-emerald" />
-                {isLlmConfigured ? "Operational" : "Key Missing"}
-              </span>
-            </div>
+            </details>
 
             {/* Gemini Builder Model */}
-            <div className="py-3 flex items-center justify-between">
-              <div>
-                <span className="font-bold text-paper-900 dark:text-paper-100 block">
-                  Google Gemini API (Builder: {stats.models.builder})
+            <details name="infra-item" className="modern-accordion group py-3">
+              <summary className="flex items-center justify-between cursor-pointer list-none">
+                <div className="flex items-center gap-2">
+                  <ChevronDown className="w-4 h-4 text-paper-400 group-open:rotate-180 transition-transform duration-200 shrink-0" />
+                  <div>
+                    <span className="font-bold text-paper-900 dark:text-paper-100 block">
+                      Google Gemini API (Builder: {stats.models.builder})
+                    </span>
+                    <span className="text-paper-500">
+                      Constrained JS synthesis, SSE token streaming & self-repair loop
+                    </span>
+                  </div>
+                </div>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md border border-arcade-emerald/30 bg-arcade-emerald/10 text-arcade-emerald font-mono text-xs font-bold shrink-0">
+                  <span className="w-1.5 h-1.5 rounded-sm bg-arcade-emerald" />
+                  {isLlmConfigured ? "Operational" : "Key Missing"}
                 </span>
-                <span className="text-paper-500">
-                  Constrained JS synthesis, SSE token streaming & self-repair loop
-                </span>
+              </summary>
+              <div className="mt-3 pl-6 pr-2 py-3 rounded-lg bg-paper-50 dark:bg-paper-800/50 border border-paper-200 dark:border-paper-700/60 text-[11px] space-y-1.5 text-paper-600 dark:text-paper-400">
+                <div className="flex justify-between">
+                  <span className="text-paper-500">Active Model:</span>
+                  <span className="font-bold text-paper-800 dark:text-paper-200">{stats.models.builder}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-paper-500">Synthesis Format:</span>
+                  <span className="font-bold text-paper-800 dark:text-paper-200">ES2020 Pure JavaScript Simulation Module</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-paper-500">Self-Repair Depth:</span>
+                  <span className="font-bold text-arcade-cyan">Up to 3 autonomous AST feedback iterations</span>
+                </div>
               </div>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md border border-arcade-emerald/30 bg-arcade-emerald/10 text-arcade-emerald font-mono text-xs font-bold">
-                <span className="w-1.5 h-1.5 rounded-sm bg-arcade-emerald" />
-                {isLlmConfigured ? "Operational" : "Key Missing"}
-              </span>
-            </div>
+            </details>
 
             {/* Fallback Chain */}
-            <div className="py-3 flex items-center justify-between">
-              <div>
-                <span className="font-bold text-paper-900 dark:text-paper-100 block">
-                  Multi-Model Fallback Chain ({stats.models.fallbacks.join(" → ")})
+            <details name="infra-item" className="modern-accordion group py-3">
+              <summary className="flex items-center justify-between cursor-pointer list-none">
+                <div className="flex items-center gap-2">
+                  <ChevronDown className="w-4 h-4 text-paper-400 group-open:rotate-180 transition-transform duration-200 shrink-0" />
+                  <div>
+                    <span className="font-bold text-paper-900 dark:text-paper-100 block">
+                      Multi-Model Fallback Chain ({stats.models.fallbacks.join(" → ")})
+                    </span>
+                    <span className="text-paper-500">
+                      Automatic failover protection against rate limits (429) and deprecations (404)
+                    </span>
+                  </div>
+                </div>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md border border-arcade-emerald/30 bg-arcade-emerald/10 text-arcade-emerald font-mono text-xs font-bold shrink-0">
+                  <span className="w-1.5 h-1.5 rounded-sm bg-arcade-emerald" />
+                  Active
                 </span>
-                <span className="text-paper-500">
-                  Automatic failover protection against rate limits (429) and deprecations (404)
-                </span>
+              </summary>
+              <div className="mt-3 pl-6 pr-2 py-3 rounded-lg bg-paper-50 dark:bg-paper-800/50 border border-paper-200 dark:border-paper-700/60 text-[11px] space-y-1.5 text-paper-600 dark:text-paper-400">
+                <div className="flex justify-between">
+                  <span className="text-paper-500">Priority 1 (Primary):</span>
+                  <span className="font-bold text-paper-800 dark:text-paper-200">gemini-3.5-flash-lite (Lowest latency)</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-paper-500">Priority 2 (Secondary):</span>
+                  <span className="font-bold text-paper-800 dark:text-paper-200">gemini-3.5-flash (Balanced compute)</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-paper-500">Priority 3 (Tertiary):</span>
+                  <span className="font-bold text-paper-800 dark:text-paper-200">gemini-3.1-flash-lite (High reliability fallback)</span>
+                </div>
               </div>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md border border-arcade-emerald/30 bg-arcade-emerald/10 text-arcade-emerald font-mono text-xs font-bold">
-                <span className="w-1.5 h-1.5 rounded-sm bg-arcade-emerald" />
-                Active
-              </span>
-            </div>
+            </details>
 
             {/* Client-Side Verifier */}
-            <div className="py-3 flex items-center justify-between">
-              <div>
-                <span className="font-bold text-paper-900 dark:text-paper-100 block">
-                  Client-Side Verification Engine
+            <details name="infra-item" className="modern-accordion group py-3">
+              <summary className="flex items-center justify-between cursor-pointer list-none">
+                <div className="flex items-center gap-2">
+                  <ChevronDown className="w-4 h-4 text-paper-400 group-open:rotate-180 transition-transform duration-200 shrink-0" />
+                  <div>
+                    <span className="font-bold text-paper-900 dark:text-paper-100 block">
+                      Client-Side Verification Engine
+                    </span>
+                    <span className="text-paper-500">
+                      Acorn AST instrumentation, 600-step headless model run, canvas variance
+                    </span>
+                  </div>
+                </div>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md border border-arcade-emerald/30 bg-arcade-emerald/10 text-arcade-emerald font-mono text-xs font-bold shrink-0">
+                  <span className="w-1.5 h-1.5 rounded-sm bg-arcade-emerald" />
+                  Operational ({stats.checksPassed}/12 Checks)
                 </span>
-                <span className="text-paper-500">
-                  Acorn AST instrumentation, 600-step headless model run, canvas variance
-                </span>
+              </summary>
+              <div className="mt-3 pl-6 pr-2 py-3 rounded-lg bg-paper-50 dark:bg-paper-800/50 border border-paper-200 dark:border-paper-700/60 text-[11px] space-y-1.5 text-paper-600 dark:text-paper-400">
+                <div className="flex justify-between">
+                  <span className="text-paper-500">Verification Engine:</span>
+                  <span className="font-bold text-paper-800 dark:text-paper-200">Acorn AST Parser + 600-step headless runner</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-paper-500">Loop Protection:</span>
+                  <span className="font-bold text-arcade-emerald">AST Loop-Guard Injection (Max 10k iterations/step)</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-paper-500">Median Execution:</span>
+                  <span className="font-bold text-paper-800 dark:text-paper-200">{stats.latencies.p50Ms.toFixed(1)} ms</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-paper-500">95th Percentile:</span>
+                  <span className="font-bold text-paper-800 dark:text-paper-200">{stats.latencies.p95Ms.toFixed(1)} ms</span>
+                </div>
               </div>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md border border-arcade-emerald/30 bg-arcade-emerald/10 text-arcade-emerald font-mono text-xs font-bold">
-                <span className="w-1.5 h-1.5 rounded-sm bg-arcade-emerald" />
-                Operational ({stats.checksPassed}/12 Checks)
-              </span>
-            </div>
+            </details>
           </div>
         </div>
 

@@ -11,6 +11,7 @@ import { TourPanel } from "@/components/TourPanel";
 import { QuizPanel } from "@/components/QuizPanel";
 import { MisconceptionsPanel } from "@/components/MisconceptionsPanel";
 import { UnderTheHood } from "@/components/UnderTheHood";
+import { ShareDialog } from "@/components/ShareDialog";
 import { GuidedTour } from "@/lib/schemas/guide";
 import { generateStaticTourFromSpec } from "@/lib/pipeline/guide";
 
@@ -33,7 +34,7 @@ export function SimulationView({ sim }: SimulationViewProps) {
   const [currentParams, setCurrentParams] = useState<Record<string, number>>(initialParams);
   const [metricsHistory, setMetricsHistory] = useState<{ t: number; metrics: Record<string, number> }[]>([]);
   const [activeMode, setActiveMode] = useState<"explore" | "guided" | "quiz" | "hood">("explore");
-  const [copied, setCopied] = useState(false);
+  const [isShareOpen, setIsShareOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [latestMetricText, setLatestMetricText] = useState("");
 
@@ -90,12 +91,8 @@ export function SimulationView({ sim }: SimulationViewProps) {
     setCurrentParams((prev) => ({ ...prev, ...params }));
   };
 
-  const handleCopyLink = () => {
-    if (typeof window !== "undefined") {
-      navigator.clipboard.writeText(window.location.href);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
+  const handleOpenShare = () => {
+    setIsShareOpen(true);
   };
 
   return (
@@ -144,17 +141,26 @@ export function SimulationView({ sim }: SimulationViewProps) {
               {darkMode ? <Sun className="w-3.5 h-3.5 text-arcade-amber" /> : <Moon className="w-3.5 h-3.5" />}
             </button>
 
-            {/* Share Link */}
+            {/* Share Dialog Trigger */}
             <button
-              onClick={handleCopyLink}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded border border-paper-300 dark:border-paper-700 hover:border-arcade-crimson text-xs font-mono transition"
+              onClick={() => setIsShareOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-paper-300 dark:border-paper-700 hover:border-arcade-crimson text-xs font-mono transition cursor-pointer"
+              title="Share or embed simulation"
             >
-              {copied ? <Check className="w-3.5 h-3.5 text-arcade-emerald" /> : <Share2 className="w-3.5 h-3.5" />}
-              <span className="hidden sm:inline">{copied ? "Copied!" : "Share"}</span>
+              <Share2 className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Share</span>
             </button>
           </div>
         </div>
       </header>
+
+      {/* Modern Native Dialog Modal */}
+      <ShareDialog
+        isOpen={isShareOpen}
+        onClose={() => setIsShareOpen(false)}
+        title={spec.title}
+        slug={sim.slug}
+      />
 
       {/* Main Simulation Viewport & Controls */}
       <main className="max-w-7xl mx-auto px-4 py-6 flex-1 w-full grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
@@ -187,12 +193,21 @@ export function SimulationView({ sim }: SimulationViewProps) {
         </div>
 
         {/* Right Column (5 cols): Interactive Learning Mode Tabs */}
-        <div className="lg:col-span-5 flex flex-col gap-4">
-          {/* Mode Tabs Header */}
-          <div className="flex border-b border-paper-200 dark:border-paper-700 bg-paper-100/50 dark:bg-paper-800/40 p-1 rounded-xl text-xs font-mono">
+        <div className="lg:col-span-5 flex flex-col gap-4 cq-container">
+          {/* Mode Tabs Header following Modern Web Guidance ui-components/tabs */}
+          <div
+            role="tablist"
+            aria-label="Interactive learning modes"
+            className="flex border-b border-paper-200 dark:border-paper-700 bg-paper-100/50 dark:bg-paper-800/40 p-1 rounded-xl text-xs font-mono"
+          >
             <button
+              type="button"
+              role="tab"
+              id="tab-explore"
+              aria-selected={activeMode === "explore"}
+              aria-controls="panel-explore"
               onClick={() => setActiveMode("explore")}
-              className={`flex-1 py-2 rounded-lg font-bold transition flex items-center justify-center gap-1.5 ${
+              className={`flex-1 py-2 rounded-lg font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
                 activeMode === "explore"
                   ? "bg-white dark:bg-paper-900 text-paper-950 dark:text-paper-50 shadow-sm border border-paper-300 dark:border-paper-700"
                   : "text-paper-500 hover:text-paper-900"
@@ -203,8 +218,13 @@ export function SimulationView({ sim }: SimulationViewProps) {
             </button>
 
             <button
+              type="button"
+              role="tab"
+              id="tab-guided"
+              aria-selected={activeMode === "guided"}
+              aria-controls="panel-guided"
               onClick={() => setActiveMode("guided")}
-              className={`flex-1 py-2 rounded-lg font-bold transition flex items-center justify-center gap-1.5 ${
+              className={`flex-1 py-2 rounded-lg font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
                 activeMode === "guided"
                   ? "bg-white dark:bg-paper-900 text-paper-950 dark:text-paper-50 shadow-sm border border-paper-300 dark:border-paper-700"
                   : "text-paper-500 hover:text-paper-900"
@@ -215,8 +235,13 @@ export function SimulationView({ sim }: SimulationViewProps) {
             </button>
 
             <button
+              type="button"
+              role="tab"
+              id="tab-quiz"
+              aria-selected={activeMode === "quiz"}
+              aria-controls="panel-quiz"
               onClick={() => setActiveMode("quiz")}
-              className={`flex-1 py-2 rounded-lg font-bold transition flex items-center justify-center gap-1.5 ${
+              className={`flex-1 py-2 rounded-lg font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
                 activeMode === "quiz"
                   ? "bg-white dark:bg-paper-900 text-paper-950 dark:text-paper-50 shadow-sm border border-paper-300 dark:border-paper-700"
                   : "text-paper-500 hover:text-paper-900"
@@ -227,8 +252,13 @@ export function SimulationView({ sim }: SimulationViewProps) {
             </button>
 
             <button
+              type="button"
+              role="tab"
+              id="tab-hood"
+              aria-selected={activeMode === "hood"}
+              aria-controls="panel-hood"
               onClick={() => setActiveMode("hood")}
-              className={`flex-1 py-2 rounded-lg font-bold transition flex items-center justify-center gap-1.5 ${
+              className={`flex-1 py-2 rounded-lg font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
                 activeMode === "hood"
                   ? "bg-white dark:bg-paper-900 text-paper-950 dark:text-paper-50 shadow-sm border border-paper-300 dark:border-paper-700"
                   : "text-paper-500 hover:text-paper-900"
@@ -239,34 +269,66 @@ export function SimulationView({ sim }: SimulationViewProps) {
             </button>
           </div>
 
-          {/* Mode Contents */}
-          {activeMode === "explore" && (
-            <ParamPanel
-              spec={spec}
-              currentParams={currentParams}
-              onParamChange={handleParamChange}
-              onApplyPreset={handleApplyParams}
-            />
-          )}
+          {/* Mode Contents Panels */}
+          <div
+            role="tabpanel"
+            id="panel-explore"
+            aria-labelledby="tab-explore"
+            tabIndex={0}
+            hidden={activeMode !== "explore"}
+          >
+            {activeMode === "explore" && (
+              <ParamPanel
+                spec={spec}
+                currentParams={currentParams}
+                onParamChange={handleParamChange}
+                onApplyPreset={handleApplyParams}
+              />
+            )}
+          </div>
 
-          {activeMode === "guided" && (
-            <TourPanel
-              tour={tour}
-              onApplyParams={handleApplyParams}
-              onPlaySimulation={() => {}}
-            />
-          )}
+          <div
+            role="tabpanel"
+            id="panel-guided"
+            aria-labelledby="tab-guided"
+            tabIndex={0}
+            hidden={activeMode !== "guided"}
+          >
+            {activeMode === "guided" && (
+              <TourPanel
+                tour={tour}
+                onApplyParams={handleApplyParams}
+                onPlaySimulation={() => {}}
+              />
+            )}
+          </div>
 
-          {activeMode === "quiz" && (
-            <div className="space-y-4">
-              <QuizPanel spec={spec} />
-              <MisconceptionsPanel misconceptions={spec.misconceptions} />
-            </div>
-          )}
+          <div
+            role="tabpanel"
+            id="panel-quiz"
+            aria-labelledby="tab-quiz"
+            tabIndex={0}
+            hidden={activeMode !== "quiz"}
+          >
+            {activeMode === "quiz" && (
+              <div className="space-y-4">
+                <QuizPanel spec={spec} />
+                <MisconceptionsPanel misconceptions={spec.misconceptions} />
+              </div>
+            )}
+          </div>
 
-          {activeMode === "hood" && (
-            <UnderTheHood sim={sim} />
-          )}
+          <div
+            role="tabpanel"
+            id="panel-hood"
+            aria-labelledby="tab-hood"
+            tabIndex={0}
+            hidden={activeMode !== "hood"}
+          >
+            {activeMode === "hood" && (
+              <UnderTheHood sim={sim} />
+            )}
+          </div>
         </div>
       </main>
 

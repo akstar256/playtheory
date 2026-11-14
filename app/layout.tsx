@@ -18,6 +18,41 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        {/* Modern Web Guidance: Speculation Rules API for instant prefetch and prerender on hover */}
+        <script
+          type="speculationrules"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              prefetch: [
+                {
+                  source: "document",
+                  where: {
+                    and: [
+                      { href_matches: "/*" },
+                      { not: { href_matches: "/api/*" } }
+                    ]
+                  },
+                  eagerness: "moderate"
+                }
+              ],
+              prerender: [
+                {
+                  source: "document",
+                  where: {
+                    or: [
+                      { href_matches: "/s/*" },
+                      { href_matches: "/status" },
+                      { href_matches: "/about" }
+                    ]
+                  },
+                  eagerness: "conservative"
+                }
+              ]
+            })
+          }}
+        />
+      </head>
       <body className="antialiased selection:bg-arcade-cyan selection:text-paper-950">
         {children}
       </body>

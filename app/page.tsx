@@ -288,6 +288,63 @@ export default function Home() {
             </Link>
           </div>
         </div>
+
+        {/* Architecture & Engineering Accordion (Modern Web Guidance: ui-components/accordion) */}
+        <section className="w-full max-w-3xl mt-12 mb-4 text-left space-y-3" aria-labelledby="architecture-heading">
+          <div className="flex items-center justify-between mb-2">
+            <h2 id="architecture-heading" className="font-bold font-mono text-sm uppercase tracking-wider text-paper-800 dark:text-paper-200">
+              Compound AI &amp; Verifier Architecture
+            </h2>
+            <span className="text-xs font-mono text-paper-500">Autonomous Pipeline</span>
+          </div>
+
+          <div className="space-y-2 text-xs font-mono">
+            <details name="pipeline-faq" className="modern-accordion p-4 rounded-xl border border-paper-300 dark:border-paper-700 bg-white dark:bg-paper-900 group">
+              <summary className="flex items-center justify-between font-bold cursor-pointer list-none text-paper-900 dark:text-paper-100">
+                <span className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-sm bg-arcade-crimson" />
+                  1. Mathematical Planning &amp; SimSpec Synthesis
+                </span>
+                <span className="text-paper-400 group-open:rotate-180 transition-transform duration-200">▾</span>
+              </summary>
+              <div className="mt-3 pt-3 border-t border-paper-200 dark:border-paper-800 text-paper-600 dark:text-paper-400 space-y-1.5 leading-relaxed">
+                <p>
+                  The planner analyzes the concept, chooses the ideal mathematical archetype (particles, ode_phase, agents, cellular_automaton, or queue_flow), and produces a strictly validated JSON specification with state parameters, physical bounds, phase plots, and learning objectives.
+                </p>
+              </div>
+            </details>
+
+            <details name="pipeline-faq" className="modern-accordion p-4 rounded-xl border border-paper-300 dark:border-paper-700 bg-white dark:bg-paper-900 group">
+              <summary className="flex items-center justify-between font-bold cursor-pointer list-none text-paper-900 dark:text-paper-100">
+                <span className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-sm bg-arcade-amber" />
+                  2. Constrained JavaScript Canvas Engine
+                </span>
+                <span className="text-paper-400 group-open:rotate-180 transition-transform duration-200">▾</span>
+              </summary>
+              <div className="mt-3 pt-3 border-t border-paper-200 dark:border-paper-800 text-paper-600 dark:text-paper-400 space-y-1.5 leading-relaxed">
+                <p>
+                  The code builder generates a self-contained ES2020 JavaScript simulation module. The code strictly avoids dangerous browser APIs, uses explicit parameter clamps, and exports deterministic <code>init()</code>, <code>step(dt, params)</code>, and <code>draw(ctx, width, height)</code> interfaces.
+                </p>
+              </div>
+            </details>
+
+            <details name="pipeline-faq" className="modern-accordion p-4 rounded-xl border border-paper-300 dark:border-paper-700 bg-white dark:bg-paper-900 group">
+              <summary className="flex items-center justify-between font-bold cursor-pointer list-none text-paper-900 dark:text-paper-100">
+                <span className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-sm bg-arcade-emerald" />
+                  3. Client-Side 12-Point Verifier &amp; Self-Repair Loop
+                </span>
+                <span className="text-paper-400 group-open:rotate-180 transition-transform duration-200">▾</span>
+              </summary>
+              <div className="mt-3 pt-3 border-t border-paper-200 dark:border-paper-800 text-paper-600 dark:text-paper-400 space-y-1.5 leading-relaxed">
+                <p>
+                  Before running in the UI, an Acorn AST static analyzer inspects the syntax, checks for banned globals, and injects runtime loop-guards. A headless 600-step simulation runs to detect infinite loops, numerical instability (NaN/Infinity), and dead states. If any check fails, the self-repair loop sends targeted error diagnostics back to the LLM to patch the code automatically.
+                </p>
+              </div>
+            </details>
+          </div>
+        </section>
       </main>
 
       {/* Footer */}
