@@ -1,11 +1,11 @@
-# PlayTheory 🎮🧪
+# PlayTheory
 
 > **From natural-language concept to working, verified, interactive simulation in seconds.**  
-> Autonomous Physics & Computational Simulation Engine with AST Loop Guards and Live Self-Repair.
+> Autonomous Physics & Computational Simulation Engine with AST Loop Guards, Live Self-Repair, and On-Device Local Model Support.
 
 ---
 
-## 🌐 Live Production Links
+## Live Production Links
 
 - **Production App:** [https://playtheory-gamma.vercel.app](https://playtheory-gamma.vercel.app)
 - **Live System Status & Telemetry:** [https://playtheory-gamma.vercel.app/status](https://playtheory-gamma.vercel.app/status)
@@ -14,47 +14,78 @@
 
 ---
 
-## 🌟 The Problem & Mission
+## The Problem & Mission
 
-Textbooks and standard LLM chatbots give learners static paragraphs, dense equations, and flat diagrams. But physical intuition and deep computational understanding are not formed by reading text—they are built by **poking a system, cranking its parameters, and observing emergent phase shifts**.
+Textbooks and standard LLM chatbots give learners static paragraphs, dense equations, and flat diagrams. Physical intuition and deep computational understanding are not formed by reading text alone—they are built by **poking a system, adjusting its parameters, and observing emergent phase shifts**.
 
-**PlayTheory** is an autonomous **compound AI system** that transforms any concept (*"TCP congestion control"*, *"Lotka-Volterra predator-prey"*, *"M/M/1 queue delays"*, *"how vaccines train the immune system"*) into a fully working, interactive simulation with:
-- 🎛️ **Live parameter sliders & multi-series plots**
-- 🧭 **Guided predict-then-reveal tour** based on Physics Education Research
-- ❓ **Interactive misconception callouts & conceptual mastery quizzes**
-- 🛡️ **12-point client-side automated verifier** running in an isolated sandboxed runtime
-- 🔄 **Autonomous self-repair loop** that repairs faulty code on the fly before user interaction
+**PlayTheory** is an autonomous **compound AI system** that transforms any concept (*"TCP congestion control"*, *"Lotka-Volterra predator-prey"*, *"M/M/1 queue delays"*, *"how vaccines train the immune system"*) into a verified, interactive simulation with:
+- **Live parameter sliders and multi-series plots**
+- **Guided predict-then-reveal tours** based on Physics Education Research
+- **Interactive misconception callouts and conceptual mastery quizzes**
+- **12-point client-side automated verifier** running in an isolated sandboxed runtime
+- **Autonomous self-repair loop** that patches faulty code on the fly before user interaction
+- **Dual Engine Execution:** Cloud Gemini or local, private on-device Gemma models via LM Studio
+- **Modern Web Platform Standards:** Speculation Rules API for instant navigation, native dialog elements, CSS container queries, and accessible WAI-ARIA tabs
 
 ---
 
-## 📊 Real Evaluation Benchmark Metrics (`docs/EVAL.md`)
+## Latest Features & Architecture Enhancements
+
+### 1. Dual Inference Engine (Cloud Gemini + On-Device Local Gemma)
+- **Cloud Gemini:** Uses Google Gemini (Gemini 3.5 Flash Lite) with automated multi-model fallbacks for sub-second cloud generation.
+- **Local On-Device Models (LM Studio):** Direct in-browser fetch connection to local servers (e.g. `http://localhost:1234` or local IP) running models such as `google/gemma-4-12b-qat`.
+- **Zero Tunnel Required:** Connects directly from the browser to the local LM Studio instance with CORS support, keeping prompts and code completely private on the user's machine.
+- **Provider Switcher:** Allows toggling between Cloud and Local inference directly from the homepage with real-time connectivity health checks.
+
+### 2. Interactive In-Flight Stop Button
+- Seamless generation cancellation via native `AbortController` and `AbortSignal`.
+- The Build button dynamically transforms into a red Stop button during planning and synthesis.
+- Halts in-flight network requests (both cloud API routes and local LM Studio calls) and resets the pipeline cleanly to idle.
+
+### 3. Modern Web Platform Guidance (Google Chrome Modern Web Standards)
+Built following the official Google Chrome Modern Web Guidance standards (`GoogleChrome/modern-web-guidance`):
+- **Speculation Rules API:** `<script type="speculationrules">` prefetches and prerenders same-origin routes on hover with moderate eagerness, enabling instant 0ms page transitions.
+- **Native HTML5 Dialog Element:** Top-layer Share and Embed modal implemented with `<dialog>`, featuring `@starting-style` entry animations, discrete transitions (`transition-behavior: allow-discrete;`, `overlay`, `display`), backdrop blur (`backdrop-filter: blur(6px)`), and scroll containment (`overscroll-behavior: contain`).
+- **CSS Container Queries (`@container`):** Simulation panels and card layouts adapt dynamically based on component container width (`container-type: inline-size`) rather than viewport breakpoints.
+- **WAI-ARIA Tabbed Navigation:** Mode switcher (`Explore`, `Guided`, `Quiz`, `Proof`) structured with `role="tablist"`, `aria-selected`, `aria-controls`, and `role="tabpanel"`.
+- **Modern Accordions (`<details>` and `<summary>`):** Native disclosure elements with exclusive accordion groups (`name="infra-item"` and `name="pipeline-faq"`) with smooth height transitions (`interpolate-size: allow-keywords`).
+- **Tactile Micro-Interactions:** High-contrast `:focus-visible` rings with a 3:1 contrast ratio and physical `:active:not(:disabled)` micro-scale feedback (`scale: 0.98`).
+
+### 4. Real-Time Telemetry & Health Monitoring
+- Dynamic live ping measurements (`storePingMs`) calculated via `performance.now()` against Upstash Redis on every request.
+- Live polling every 5 seconds with an active seconds counter (`Live (Xs ago)`), exact update timestamps, and continuous uptime calculations.
+- Industrial technical telemetry badges replacing generic rounded pills.
+
+---
+
+## Real Evaluation Benchmark Metrics (`docs/EVAL.md`)
 
 Measured across a benchmark set of **30 concepts** across 7 scientific and computational domains:
 
 | Metric | Real Benchmark Value | Acceptance Criteria | Status |
 |---|---|---|---|
-| **First-Attempt Pass Rate** | **100.0%** (30 / 30) | > 70% | **PASSED** ✅ |
-| **Post-Repair Success Rate** | **100.0%** (30 / 30) | > 90% | **PASSED** ✅ |
-| **Median Verification Latency (p50)** | **1.4 ms** | < 1,000 ms | **PASSED** ✅ |
-| **95th Percentile Latency (p95)** | **12.0 ms** | < 2,500 ms | **PASSED** ✅ |
-| **Average Estimated Cost per Simulation** | **$0.0028** | < $0.02 | **PASSED** ✅ |
-| **Total Test Dataset Size** | **30 Concepts** | ≥ 30 concepts | **PASSED** ✅ |
+| **First-Attempt Pass Rate** | **100.0%** (30 / 30) | > 70% | **PASSED** |
+| **Post-Repair Success Rate** | **100.0%** (30 / 30) | > 90% | **PASSED** |
+| **Median Verification Latency (p50)** | **1.4 ms** | < 1,000 ms | **PASSED** |
+| **95th Percentile Latency (p95)** | **12.0 ms** | < 2,500 ms | **PASSED** |
+| **Average Estimated Cost per Simulation** | **$0.0028** | < $0.02 | **PASSED** |
+| **Total Test Dataset Size** | **30 Concepts** | >= 30 concepts | **PASSED** |
 
 *Full domain breakdown, per-concept latencies, and check logs are documented in [`docs/EVAL.md`](file:///Users/ameykaulavkar/Documents/GitHub/playtheory/docs/EVAL.md).*
 
 ---
 
-## ⚙️ How It Works (The Compound AI Pipeline)
+## How It Works (The Compound AI Pipeline)
 
-Unlike raw chatbot wrappers that produce untested hallucinated code, PlayTheory operates as a structured multi-stage pipeline:
+Unlike raw chatbot wrappers that produce untested code, PlayTheory operates as a structured multi-stage pipeline:
 
 ```mermaid
 flowchart TD
-  User([User Concept Input]) --> PlanNode["Stage 1: Planner (Gemini 2.5 Pro)<br/>Validates domain, generates SimSpec JSON schema"]
-  PlanNode --> BuildNode["Stage 2: Builder (Gemini 2.5 Flash)<br/>Streams ES2020 JavaScript using SimKit"]
+  User([User Concept Input]) --> PlanNode["Stage 1: Planner (Gemini / Local Gemma)<br/>Validates domain, generates SimSpec JSON schema"]
+  PlanNode --> BuildNode["Stage 2: Builder (Gemini / Local Gemma)<br/>Streams ES2020 JavaScript using SimKit"]
   BuildNode --> ASTNode["Stage 3: AST Loop Guard<br/>Injects iteration counters into all loops"]
   ASTNode --> VerifierNode["Stage 4: 12-Point Verifier Engine<br/>600-step headless model run, sensitivity & canvas checks"]
-  VerifierNode -- "Fail (≤ 3 attempts)" --> RepairNode["Stage 5: Autonomous Repair<br/>Patches failing check details & regenerates"]
+  VerifierNode -- "Fail (<= 3 attempts)" --> RepairNode["Stage 5: Autonomous Repair<br/>Patches failing check details & regenerates"]
   RepairNode --> ASTNode
   VerifierNode -- "Pass" --> CacheNode["Stage 6: Persistence<br/>Upstash Redis store & prompt cache"]
   CacheNode --> ClientNode["Stage 7: Interactive UI<br/>Player + Predict-then-Reveal Tour + Quiz"]
@@ -83,7 +114,7 @@ flowchart TD
 
 ---
 
-## 🎨 Five Core Simulation Archetypes
+## Five Core Simulation Archetypes
 
 PlayTheory is seeded with 5 production exemplar archetypes that guarantee immediate playability and serve as architectural few-shot anchors for the builder:
 
@@ -95,7 +126,7 @@ PlayTheory is seeded with 5 production exemplar archetypes that guarantee immedi
 
 ---
 
-## 🚀 Quickstart & Local Setup
+## Quickstart & Local Setup
 
 ### Prerequisites
 - Node.js 18+ (tested on Node.js 20+)
@@ -130,11 +161,17 @@ DAILY_BUDGET_USD=0
 ```bash
 npm run dev
 ```
-Open [http://localhost:3000](http://localhost:3000) to start generating simulations!
+Open [http://localhost:3000](http://localhost:3000) to start generating simulations.
+
+### 4. Optional: Connect Local On-Device Gemma (LM Studio)
+1. Open LM Studio on your machine.
+2. Load any GGUF instruction model (e.g., `google/gemma-4-12b-qat`).
+3. Under **Local Server**, set Server Port to `1234` and enable **CORS**.
+4. In PlayTheory, select **Local (Gemma 4 12B)** in the model toggle bar.
 
 ---
 
-## 🧪 Verification & Testing Commands
+## Verification & Testing Commands
 
 ```bash
 # Type-check entire codebase
@@ -143,7 +180,7 @@ npm run typecheck
 # Run Next.js and ESLint code quality checks
 npm run lint
 
-# Run all 8 Vitest unit test suites
+# Run all 9 Vitest unit test suites (35 unit and AST verifier tests)
 npm run test
 
 # Run complete CI verification pipeline
@@ -161,7 +198,7 @@ npm run smoke https://playtheory-gamma.vercel.app
 
 ---
 
-## 📁 Repository Structure
+## Repository Structure
 
 ```
 playtheory/
@@ -187,9 +224,11 @@ playtheory/
     MisconceptionsPanel.tsx # Physics education misconceptions callouts
     PipelineTimeline.tsx    # Live pipeline stage & check rows
     UnderTheHood.tsx        # Inspection tab for code, AST, and verifier proofs
+    ProviderToggle.tsx      # Cloud Gemini vs Local Gemma model toggle
+    ShareDialog.tsx         # Native HTML5 dialog modal for sharing & embedding
   lib/
     archetypes/             # 5 core archetype exemplars & specs
-    llm/                    # Gemini provider adapters, prompts & spend tracking
+    llm/                    # Gemini provider adapters, local Gemma client & spend tracking
     pipeline/               # Planner, builder, repair orchestrator state machine
     runtime/                # SimKit math & drawing helpers, sandbox shell
     schemas/                # Zod contracts (SimSpec, VerificationReport, GuideTour)
@@ -209,21 +248,28 @@ playtheory/
 
 ---
 
-## 🏆 Key Architectural & Production Highlights
+## Key Architectural & Production Highlights
 
 - **Production Deployment:**
   - Live on Vercel at `https://playtheory-gamma.vercel.app`
   - Connected to serverless Upstash Redis with sub-50ms REST latency
-  - Responsive design supporting desktop, tablet, and mobile (390px viewport verified)
+  - Responsive design supporting desktop, tablet, and mobile viewports
   - Zero mock data in production; automated smoke tests verify live health
 - **Autonomous Verification & Compound AI:**
   - Two-phase compound AI architecture separating planning from code synthesis
   - Real-time client-side AST instrumentation eliminating infinite loop exploits
   - Autonomous self-repair loop with HMAC signed tokens capping attempts at 3
   - 100.0% pass rate across a 30-concept benchmark suite evaluated against 12 strict checks
+- **Local & Cloud Hybrid Inference:**
+  - Support for local Gemma models via LM Studio with direct browser fetch and zero tunnel requirements
+  - Dynamic in-flight cancellation with AbortController on both cloud and local pipelines
+- **Modern Web Guidance Standards:**
+  - Speculation Rules API for instant 0ms prefetch/prerender
+  - Top-layer native HTML5 dialogs with `@starting-style` transitions
+  - Accessible WAI-ARIA tab navigation and container query responsiveness
 
 ---
 
-## 📄 License
+## License
 
 MIT License. PlayTheory Autonomous Engine.
