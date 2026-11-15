@@ -254,8 +254,6 @@ playtheory/
     seed-gallery.ts         # Upstash Redis gallery seeder
     smoke.ts                # Production deployment smoke test
   docs/
-    ARCHITECTURE.md         # Deep-dive system architecture & data contracts
-    DEPLOY.md               # Deployment and smoke test manual
     EVAL.md                 # Real benchmark results across 30 concepts
   AI_USAGE.md               # Detailed disclosure of AI usage, models, and workflows
 ```
