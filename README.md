@@ -42,16 +42,8 @@ Textbooks and standard LLM chatbots give learners static paragraphs, dense equat
 - The Build button dynamically transforms into a red Stop button during planning and synthesis.
 - Halts in-flight network requests (both cloud API routes and local LM Studio calls) and resets the pipeline cleanly to idle.
 
-### 3. Modern Web Platform Guidance (Google Chrome Modern Web Standards)
-Built following the official Google Chrome Modern Web Guidance standards (`GoogleChrome/modern-web-guidance`):
-- **Speculation Rules API:** `<script type="speculationrules">` prefetches and prerenders same-origin routes on hover with moderate eagerness, enabling instant 0ms page transitions.
-- **Native HTML5 Dialog Element:** Top-layer Share and Embed modal implemented with `<dialog>`, featuring `@starting-style` entry animations, discrete transitions (`transition-behavior: allow-discrete;`, `overlay`, `display`), backdrop blur (`backdrop-filter: blur(6px)`), and scroll containment (`overscroll-behavior: contain`).
-- **CSS Container Queries (`@container`):** Simulation panels and card layouts adapt dynamically based on component container width (`container-type: inline-size`) rather than viewport breakpoints.
-- **WAI-ARIA Tabbed Navigation:** Mode switcher (`Explore`, `Guided`, `Quiz`, `Proof`) structured with `role="tablist"`, `aria-selected`, `aria-controls`, and `role="tabpanel"`.
-- **Modern Accordions (`<details>` and `<summary>`):** Native disclosure elements with exclusive accordion groups (`name="infra-item"` and `name="pipeline-faq"`) with smooth height transitions (`interpolate-size: allow-keywords`).
-- **Tactile Micro-Interactions:** High-contrast `:focus-visible` rings with a 3:1 contrast ratio and physical `:active:not(:disabled)` micro-scale feedback (`scale: 0.98`).
 
-### 4. Real-Time Telemetry & Health Monitoring
+### 3. Real-Time Telemetry & Health Monitoring
 - Dynamic live ping measurements (`storePingMs`) calculated via `performance.now()` against Upstash Redis on every request.
 - Live polling every 5 seconds with an active seconds counter (`Live (Xs ago)`), exact update timestamps, and continuous uptime calculations.
 - Industrial technical telemetry badges replacing generic rounded pills.
@@ -240,10 +232,8 @@ playtheory/
     seed-gallery.ts         # Upstash Redis gallery seeder
     smoke.ts                # Production deployment smoke test
   docs/
-    ARCHITECTURE.md         # Deep-dive system architecture & data contracts
-    DEPLOY.md               # Deployment and smoke test manual
     EVAL.md                 # Real benchmark results across 30 concepts
-  AI_USAGE.md               # Detailed disclosure of AI usage, models, and workflows
+  AI_USAGE.md               # Disclosure of AI usage.
 ```
 
 ---
@@ -263,10 +253,7 @@ playtheory/
 - **Local & Cloud Hybrid Inference:**
   - Support for local Gemma models via LM Studio with direct browser fetch and zero tunnel requirements
   - Dynamic in-flight cancellation with AbortController on both cloud and local pipelines
-- **Modern Web Guidance Standards:**
-  - Speculation Rules API for instant 0ms prefetch/prerender
-  - Top-layer native HTML5 dialogs with `@starting-style` transitions
-  - Accessible WAI-ARIA tab navigation and container query responsiveness
+
 
 ---
 
