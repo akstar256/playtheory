@@ -31,61 +31,33 @@ Textbooks and standard LLM chatbots give learners static paragraphs, dense equat
 
 ## Latest Features & Architecture Enhancements
 
-### 1. Dual Inference Engine (Cloud Gemini + On-Device Local Gemma)
+### Dual Inference Engine (Cloud Gemini + On-Device Local Gemma)
 - **Cloud Gemini:** Uses Google Gemini (Gemini 3.5 Flash Lite) with automated multi-model fallbacks for sub-second cloud generation.
 - **Local On-Device Models (LM Studio):** Direct in-browser fetch connection to local servers (e.g. `http://localhost:1234` or local IP) running models such as `google/gemma-4-12b-qat`.
 - **Zero Tunnel Required:** Connects directly from the browser to the local LM Studio instance with CORS support, keeping prompts and code completely private on the user's machine.
 - **Provider Switcher:** Allows toggling between Cloud and Local inference directly from the homepage with real-time connectivity health checks.
 
-### 2. Interactive In-Flight Stop Button
-- Seamless generation cancellation via native `AbortController` and `AbortSignal`.
-- The Build button dynamically transforms into a red Stop button during planning and synthesis.
-- Halts in-flight network requests (both cloud API routes and local LM Studio calls) and resets the pipeline cleanly to idle.
 
-### 3. Google Chrome Modern Web Guidance Integration
-Built following the official Google Chrome Modern Web Guidance standards (`GoogleChrome/modern-web-guidance`):
-- **Speculation Rules API:** `<script type="speculationrules">` prefetches and prerenders same-origin routes on hover with moderate eagerness, enabling instant 0ms page transitions.
-- **Native HTML5 Dialog Element:** Top-layer Share and Embed modal implemented with `<dialog>`, featuring `@starting-style` entry animations, discrete transitions (`transition-behavior: allow-discrete;`, `overlay`, `display`), backdrop blur (`backdrop-filter: blur(6px)`), and scroll containment (`overscroll-behavior: contain`).
-- **CSS Container Queries (`@container`):** Simulation panels and card layouts adapt dynamically based on component container width (`container-type: inline-size`) rather than viewport breakpoints.
-- **WAI-ARIA Tabbed Navigation:** Mode switcher (`Explore`, `Guided`, `Quiz`, `Proof`) structured with `role="tablist"`, `aria-selected`, `aria-controls`, and `role="tabpanel"`.
-- **Modern Accordions (`<details>` and `<summary>`):** Native disclosure elements with exclusive accordion groups (`name="infra-item"` and `name="pipeline-faq"`) with smooth height transitions (`interpolate-size: allow-keywords`).
-- **Tactile Micro-Interactions:** High-contrast `:focus-visible` rings with a 3:1 contrast ratio and physical `:active:not(:disabled)` micro-scale feedback (`scale: 0.98`).
-
-### 4. Real-Time Telemetry & Health Monitoring
+### Real-Time Telemetry & Health Monitoring
 - Dynamic live ping measurements (`storePingMs`) calculated via `performance.now()` against Upstash Redis on every request.
 - Live polling every 5 seconds with an active seconds counter (`Live (Xs ago)`), exact update timestamps, and continuous uptime calculations.
 - Industrial technical telemetry badges replacing generic rounded pills.
 
 ---
 
-## Modern Web Guidance
-
-PlayTheory integrates standards from Google Chrome's **[Modern Web Guidance](https://github.com/GoogleChrome/modern-web-guidance)** (`npx modern-web-guidance@latest install`) to prevent obsolete or generic AI UI patterns:
-
-- **`performance/improve-next-page-load-performance`**: Added Speculation Rules in `app/layout.tsx` for speculative loading ("Speculative loading works by using JSON-based speculation rules to tell the browser about links that can be prefetched or prerendered improving page load performance when user clicks on them.").
-- **`ui-components/dialog`**: Implemented `<dialog:modal>` with `overscroll-behavior: contain` on both the dialog and `::backdrop` to prevent scrolling the page behind the modal ("MANDATORY (both rules): without them, scrolling over the backdrop or inside the dialog scrolls the page behind it").
-- **`ui-behaviors/animate-to-from-top-layer`**: Added discrete transition declarations on `dialog` and `dialog::backdrop` using separate `transition-behavior: allow-discrete` rules and `@starting-style` entry animations ("MANDATORY: transition display and overlay for top-layer elements").
-- **`ui-components/tabs`**: Structured simulation mode tabs with `role="tablist"` and styled the active state via `aria-selected="true"` so visual state remains synced with screen readers ("Style the selected tab from aria-selected, so the visual state can never disagree with the accessible one.").
-- **`ui-components/accordion`**: Grouped adjacent `<details>` elements with the `name` attribute for exclusive accordions and kept headings outside of `<summary>` to preserve assistive technology navigation ("Build accordions from a set of adjacent details elements." and "Do not put headings inside summary.").
-- **`user-experience/natural-interactions`**: Styled interactive elements with `:focus-visible` using a 3:1 contrast ratio against the background and physical active scale ("Use :focus-visible so keyboard users always see a clear focus ring, without showing it on mouse clicks.").
-- **`css/size-aware-styling`**: Applied `container-type: inline-size` to interactive panels so child component layouts adapt based on component width rather than screen viewport dimensions.
-
----
-
-## Real Evaluation Benchmark Metrics (`docs/EVAL.md`)
+## Real Evaluation Benchmark Metrics
 
 Measured across a benchmark set of **30 concepts** across 7 scientific and computational domains:
 
 | Metric | Real Benchmark Value | Acceptance Criteria | Status |
 |---|---|---|---|
-| **First-Attempt Pass Rate** | **100.0%** (30 / 30) | > 70% | **PASSED** |
-| **Post-Repair Success Rate** | **100.0%** (30 / 30) | > 90% | **PASSED** |
-| **Median Verification Latency (p50)** | **1.4 ms** | < 1,000 ms | **PASSED** |
-| **95th Percentile Latency (p95)** | **12.0 ms** | < 2,500 ms | **PASSED** |
-| **Average Estimated Cost per Simulation** | **$0.0028** | < $0.02 | **PASSED** |
-| **Total Test Dataset Size** | **30 Concepts** | >= 30 concepts | **PASSED** |
+| **First-Attempt Pass Rate** | **100.0%** (30 / 30) | > 70% |
+| **Post-Repair Success Rate** | **100.0%** (30 / 30) | > 90% | 
+| **Median Verification Latency (p50)** | **1.4 ms** | < 1,000 ms |
+| **95th Percentile Latency (p95)** | **12.0 ms** | < 2,500 ms |
+| **Average Estimated Cost per Simulation** | **$0.0028** | < $0.02 |
+| **Total Test Dataset Size** | **30 Concepts** | >= 30 concepts | 
 
-*Full domain breakdown, per-concept latencies, and check logs are documented in [`docs/EVAL.md`](file:///Users/ameykaulavkar/Documents/GitHub/playtheory/docs/EVAL.md).*
 
 ---
 
@@ -253,9 +225,7 @@ playtheory/
     eval.ts                 # 30-concept automated evaluation benchmark
     seed-gallery.ts         # Upstash Redis gallery seeder
     smoke.ts                # Production deployment smoke test
-  docs/
-    EVAL.md                 # Real benchmark results across 30 concepts
-  AI_USAGE.md               # Detailed disclosure of AI usage, models, and workflows
+
 ```
 
 ---
@@ -275,10 +245,6 @@ playtheory/
 - **Local & Cloud Hybrid Inference:**
   - Support for local Gemma models via LM Studio with direct browser fetch and zero tunnel requirements
   - Dynamic in-flight cancellation with AbortController on both cloud and local pipelines
-- **Modern Web Guidance Standards:**
-  - Speculation Rules API for instant 0ms prefetch/prerender
-  - Top-layer native HTML5 dialogs with `@starting-style` transitions
-  - Accessible WAI-ARIA tab navigation and container query responsiveness
 
 ---
 
