@@ -50,7 +50,7 @@ Textbooks and standard LLM chatbots give learners static paragraphs, dense equat
 Measured across a benchmark set of **30 concepts** across 7 scientific and computational domains:
 
 | Metric | Real Benchmark Value | Acceptance Criteria |
-|---|---|---|---|
+|---|---|---|
 | **First-Attempt Pass Rate** | **100.0%** (30 / 30) | > 70% |
 | **Post-Repair Success Rate** | **100.0%** (30 / 30) | > 90% | 
 | **Median Verification Latency (p50)** | **1.4 ms** | < 1,000 ms |
